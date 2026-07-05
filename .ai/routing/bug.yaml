@@ -1,0 +1,6 @@
+workflow: bug
+agents:
+  - planner
+  - po
+  - qa
+  - reviewer

@@ -1,0 +1,1 @@
+Seguir arquitetura e contratos.

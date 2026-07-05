@@ -1,0 +1,7 @@
+name: release
+agent: release
+documents:
+  - release.md
+memory:
+  - project_summary
+budget: 800

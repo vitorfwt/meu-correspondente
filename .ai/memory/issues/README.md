@@ -1,0 +1,1 @@
+Uma memória por issue.

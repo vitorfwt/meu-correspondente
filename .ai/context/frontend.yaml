@@ -1,0 +1,7 @@
+max_tokens: 2200
+priority:
+  - required_docs
+  - project_memory
+  - feature_memory
+optional:
+  - execution_history

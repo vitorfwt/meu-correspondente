@@ -1,0 +1,9 @@
+workflow: feature
+agents:
+  - planner
+  - po
+  - front
+  - back
+  - qa
+  - reviewer
+  - release

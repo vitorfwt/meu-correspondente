@@ -1,0 +1,7 @@
+name: backend
+agent: back
+documents:
+  - backend.md docs/architecture.md docs/api-contracts.md
+memory:
+  - project_summary
+budget: 2500

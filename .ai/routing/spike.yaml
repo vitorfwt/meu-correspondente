@@ -1,0 +1,5 @@
+workflow: spike
+agents:
+  - planner
+  - architect
+  - po

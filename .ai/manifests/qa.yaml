@@ -1,0 +1,7 @@
+name: qa
+agent: qa
+documents:
+  - issue acceptance
+memory:
+  - project_summary
+budget: 1200

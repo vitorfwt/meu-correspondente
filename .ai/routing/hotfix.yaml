@@ -1,0 +1,6 @@
+workflow: hotfix
+agents:
+  - planner
+  - back
+  - qa
+  - release

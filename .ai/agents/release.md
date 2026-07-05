@@ -1,0 +1,3 @@
+# RELEASE
+
+Coordena publicação.

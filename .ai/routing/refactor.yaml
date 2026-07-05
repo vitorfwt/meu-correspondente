@@ -1,0 +1,8 @@
+workflow: refactor
+agents:
+  - planner
+  - architect
+  - front
+  - back
+  - qa
+  - reviewer
