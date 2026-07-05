@@ -1,2 +1,2 @@
 # qa
-Valida
+Recebe contexto pronto.

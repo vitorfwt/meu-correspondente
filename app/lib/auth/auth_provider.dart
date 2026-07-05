@@ -36,6 +36,9 @@ class AuthProvider extends ChangeNotifier {
   static const String _userEmailKey = 'auth_user_email';
   static const String _userNameKey = 'auth_user_name';
   static const String _userIdKey = 'auth_user_id';
+  static const String _userRoleKey = 'auth_user_role';
+  static const String _userCreciKey = 'auth_user_creci';
+  static const String _userUfKey = 'auth_user_uf';
 
   void _loadSync() {
     try {
@@ -44,9 +47,19 @@ class AuthProvider extends ChangeNotifier {
         final userId = _prefs!.getString(_userIdKey) ?? '';
         final userName = _prefs!.getString(_userNameKey) ?? 'João Silva';
         final userEmail = _prefs!.getString(_userEmailKey) ?? 'joao.silva@example.com';
+        final userRole = _prefs!.getString(_userRoleKey) ?? 'client';
+        final userCreci = _prefs!.getString(_userCreciKey);
+        final userUf = _prefs!.getString(_userUfKey);
         
         _token = savedToken;
-        _user = User(id: userId, name: userName, email: userEmail);
+        _user = User(
+          id: userId,
+          name: userName,
+          email: userEmail,
+          role: userRole,
+          creci: userCreci,
+          uf: userUf,
+        );
         _status = AuthStatus.authenticated;
       }
     } catch (e) {
@@ -62,9 +75,19 @@ class AuthProvider extends ChangeNotifier {
         final userId = prefs.getString(_userIdKey) ?? '';
         final userName = prefs.getString(_userNameKey) ?? 'João Silva';
         final userEmail = prefs.getString(_userEmailKey) ?? 'joao.silva@example.com';
+        final userRole = prefs.getString(_userRoleKey) ?? 'client';
+        final userCreci = prefs.getString(_userCreciKey);
+        final userUf = prefs.getString(_userUfKey);
         
         _token = savedToken;
-        _user = User(id: userId, name: userName, email: userEmail);
+        _user = User(
+          id: userId,
+          name: userName,
+          email: userEmail,
+          role: userRole,
+          creci: userCreci,
+          uf: userUf,
+        );
         _status = AuthStatus.authenticated;
       }
     } catch (e) {
@@ -96,6 +119,19 @@ class AuthProvider extends ChangeNotifier {
       await prefs.setString(_userIdKey, user.id);
       await prefs.setString(_userNameKey, user.name);
       await prefs.setString(_userEmailKey, user.email);
+      await prefs.setString(_userRoleKey, user.role);
+      
+      if (user.creci != null) {
+        await prefs.setString(_userCreciKey, user.creci!);
+      } else {
+        await prefs.remove(_userCreciKey);
+      }
+      
+      if (user.uf != null) {
+        await prefs.setString(_userUfKey, user.uf!);
+      } else {
+        await prefs.remove(_userUfKey);
+      }
 
       _status = AuthStatus.authenticated;
     } catch (e) {
@@ -103,6 +139,45 @@ class AuthProvider extends ChangeNotifier {
       _errorMessage = 'Erro ao realizar login. Tente novamente.';
     }
     notifyListeners();
+  }
+
+  Future<void> saveProfile({required String creci, required String uf}) async {
+    if (_user == null || _token == null) {
+      _errorMessage = 'Usuário não autenticado';
+      notifyListeners();
+      return;
+    }
+
+    _status = AuthStatus.authenticating;
+    notifyListeners();
+
+    try {
+      final updatedUser = await _repository.updateProfile(_token!, creci, uf);
+      _user = updatedUser;
+
+      final prefs = _prefs ?? await SharedPreferences.getInstance();
+      await prefs.setString(_userRoleKey, updatedUser.role);
+      if (updatedUser.creci != null) {
+        await prefs.setString(_userCreciKey, updatedUser.creci!);
+      } else {
+        await prefs.remove(_userCreciKey);
+      }
+      
+      if (updatedUser.uf != null) {
+        await prefs.setString(_userUfKey, updatedUser.uf!);
+      } else {
+        await prefs.remove(_userUfKey);
+      }
+
+      _status = AuthStatus.authenticated;
+      _errorMessage = null;
+    } catch (e) {
+      _status = AuthStatus.error;
+      _errorMessage = 'Erro ao atualizar perfil.';
+      rethrow;
+    } finally {
+      notifyListeners();
+    }
   }
 
   Future<void> logout() async {
@@ -115,6 +190,9 @@ class AuthProvider extends ChangeNotifier {
       await prefs.remove(_userIdKey);
       await prefs.remove(_userNameKey);
       await prefs.remove(_userEmailKey);
+      await prefs.remove(_userRoleKey);
+      await prefs.remove(_userCreciKey);
+      await prefs.remove(_userUfKey);
       
       _token = null;
       _user = null;

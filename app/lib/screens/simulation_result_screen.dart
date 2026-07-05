@@ -5,6 +5,10 @@ import '../components/buttons/primary_button.dart';
 import '../components/buttons/secondary_button.dart';
 import '../simulation/simulation_repository.dart';
 import '../auth/auth_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../simulation/partner_repository.dart';
+import '../design_system/radius.dart';
 
 class BankLogo extends StatelessWidget {
   final String? logoUrl;
@@ -353,7 +357,40 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 16),
+          // ── Disclaimer Card ─────────────────────────────────────────────────
+          Container(
+            key: const Key('simulation_disclaimer_card'),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF3C7), // soft yellow
+              border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.info_outline,
+                  color: Color(0xFFD97706),
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Atenção: Os valores exibidos são simulações aproximadas e podem variar de acordo com a análise de crédito, seguros obrigatórios e taxas adicionais de cada instituição.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF78350F),
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
 
           // ── Section Title ───────────────────────────────────────────────────
           const Text(
@@ -1134,8 +1171,25 @@ class _BankDetailsSheet extends StatelessWidget {
     );
   }
 
-  void _shareProposta(BuildContext context) {
-    final text = '''📊 Proposta de Financiamento – ${simulation.nomeInstituicao}
+  void _shareProposta(BuildContext context) async {
+    final auth = AuthProviderScope.of(context);
+    final token = auth.token ?? '';
+    
+    String shareUrl = 'https://meu-correspondente.com.br/shared-simulations/mock-${simulation.nomeInstituicao.toLowerCase().replaceAll(' ', '-')}';
+    
+    try {
+      if (token.isNotEmpty) {
+        final result = await const PartnerRepository().shareSimulation(
+          token: token,
+          simulationId: 'mock-simulation-id-123',
+        );
+        shareUrl = result.shareUrl;
+      }
+    } catch (e) {
+      debugPrint('Error sharing via API: $e');
+    }
+
+    final messageText = '''📊 *Proposta de Financiamento – ${simulation.nomeInstituicao}*
 
 💰 Taxa: ${simulation.taxaJurosAnual.toStringAsFixed(2)}% a.a. (${simulation.taxaJurosMensal.toStringAsFixed(2)}% a.m.)
 🧾 CET Estimado: ${cetAnual.toStringAsFixed(2)}% a.a.
@@ -1143,16 +1197,175 @@ class _BankDetailsSheet extends StatelessWidget {
 📅 Total SAC: ${formatCurrency(simulation.totalPagoSac)}
 📅 PRICE (parcela fixa): ${formatCurrency(simulation.parcelaPrice)}
 
+Visualizar simulação completa: $shareUrl
+
 Simulado via Meu Correspondente''';
 
-    Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Proposta copiada para a área de transferência!'),
-        duration: Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
+    if (!context.mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(AppRadius.radiusBottomSheets),
+          topRight: Radius.circular(AppRadius.radiusBottomSheets),
+        ),
       ),
+      builder: (BuildContext sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: AppColors.lightGrey,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Text(
+                  'Compartilhar Proposta',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Escolha como deseja compartilhar o resumo do financiamento.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: AppColors.secondary.withOpacity(0.6),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                ListTile(
+                  key: const Key('share_whatsapp_option'),
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE8F5E9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.chat_bubble_outline_rounded, color: Color(0xFF25D366)),
+                  ),
+                  title: Text(
+                    'Compartilhar no WhatsApp',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                      fontSize: 14,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Envia a proposta formatada com link',
+                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                  ),
+                  onTap: () async {
+                    Navigator.of(sheetContext).pop();
+                    final whatsappUri = Uri.parse(
+                      'https://wa.me/?text=${Uri.encodeComponent(messageText)}',
+                    );
+                    try {
+                      if (await canLaunchUrl(whatsappUri)) {
+                        await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+                      } else {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('WhatsApp não instalado ou inacessível.')),
+                          );
+                        }
+                      }
+                    } catch (e) {
+                      debugPrint('Error launching WhatsApp: $e');
+                    }
+                  },
+                ),
+                const Divider(),
+                ListTile(
+                  key: const Key('share_copy_option'),
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE3F2FD),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.link_outlined, color: AppColors.info),
+                  ),
+                  title: Text(
+                    'Copiar Link da Proposta',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                      fontSize: 14,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Copia a URL de compartilhamento',
+                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                  ),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    Clipboard.setData(ClipboardData(text: shareUrl));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Link copiado para a área de transferência!'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                ),
+                const Divider(),
+                ListTile(
+                  key: const Key('share_pdf_option'),
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFFEBEE),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.picture_as_pdf_outlined, color: AppColors.error),
+                  ),
+                  title: Text(
+                    'Salvar como PDF (Mock)',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                      fontSize: 14,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Faz o download do relatório em PDF',
+                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                  ),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('PDF gerado com sucesso! (Demonstração)'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+        );
+      },
     );
-    Navigator.of(context).pop();
   }
 }

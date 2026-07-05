@@ -1,2 +1,2 @@
 # docs
-Documentação
+Recebe contexto pronto.

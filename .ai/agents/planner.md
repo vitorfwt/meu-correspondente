@@ -1,2 +1,2 @@
 # planner
-Coordena
+Recebe contexto pronto.

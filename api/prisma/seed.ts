@@ -7,6 +7,8 @@ async function main() {
   await prisma.interestRate.deleteMany({});
   await prisma.simulationHistory.deleteMany({});
   await prisma.financialInstitution.deleteMany({});
+  await prisma.partner.deleteMany({});
+  await prisma.macroeconomicIndicator.deleteMany({});
   await prisma.user.deleteMany({});
 
   // 1. Create a dummy user
@@ -67,6 +69,53 @@ async function main() {
       });
     }
     console.log(`Rates created for ${createdInstitution.name}`);
+  }
+
+  // 3. Create Partners (Correspondentes Bancários)
+  const partnersData = [
+    {
+      name: 'Roberto Souza',
+      email: 'roberto.souza@correspondentecaixa.com.br',
+      phone: '(11) 98765-4321',
+      company: 'Roberto Caixa Correspondente',
+      photoUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200',
+    },
+    {
+      name: 'Mariana Costa',
+      email: 'mariana.costa@itauparceiros.com.br',
+      phone: '(21) 99888-7766',
+      company: 'Mariana Assessoria Imobiliária (Itaú)',
+      photoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200',
+    },
+    {
+      name: 'Pedro Oliveira',
+      email: 'pedro.oliveira@correspondentecredito.com.br',
+      phone: '(31) 99111-2233',
+      company: 'Oliveira Crédito e Financiamento (Multibancos)',
+      photoUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200',
+    },
+  ];
+
+  for (const partner of partnersData) {
+    const createdPartner = await prisma.partner.create({
+      data: partner,
+    });
+    console.log(`Partner created: ${createdPartner.name} (${createdPartner.company})`);
+  }
+
+  // 4. Create Macroeconomic Indicators
+  const indicatorsData = [
+    { name: 'SELIC', value: 0.105 },
+    { name: 'IPCA', value: 0.045 },
+    { name: 'TR', value: 0.0012 },
+    { name: 'POUPANCA', value: 0.0617 },
+  ];
+
+  for (const indicator of indicatorsData) {
+    const createdIndicator = await prisma.macroeconomicIndicator.create({
+      data: indicator,
+    });
+    console.log(`Indicator created: ${createdIndicator.name} (${createdIndicator.value})`);
   }
 
   console.log('Database seeding finished successfully.');

@@ -11,6 +11,8 @@ model User {
   name        String
   email       String              @unique
   role        String              // "client" | "broker"
+  creci       String?
+  creciState  String?
   createdAt   DateTime            @default(now())
   simulations SimulationHistory[]
 
@@ -58,4 +60,26 @@ model SimulationHistory {
   createdAt             DateTime              @default(now())
 
   @@map("simulations")
+}
+
+model Partner {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  company   String
+  photoUrl  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("partners")
+}
+
+model MacroeconomicIndicator {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  value     Float
+  updatedAt DateTime @updatedAt
+
+  @@map("macroeconomic_indicators")
 }

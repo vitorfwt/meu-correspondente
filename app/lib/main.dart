@@ -5,6 +5,7 @@ import 'auth/auth_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/simulator_form_screen.dart';
 import 'screens/main_navigation_screen.dart';
+import 'screens/creci_setup_screen.dart';
 import 'design_system/colors.dart';
 import 'design_system/theme.dart';
 import 'components/buttons/primary_button.dart';
@@ -43,6 +44,10 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = AuthProviderScope.of(context);
     if (auth.isAuthenticated) {
+      final user = auth.user;
+      if (user != null && user.role == 'broker' && (user.creci == null || user.creci!.isEmpty)) {
+        return const CreciSetupScreen();
+      }
       return const MainNavigationScreen();
     } else {
       return const LoginScreen();

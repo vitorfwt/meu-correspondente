@@ -5,14 +5,22 @@ import '../components/cards/app_card.dart';
 import '../components/buttons/secondary_button.dart';
 import '../components/buttons/tertiary_button.dart';
 import 'simulator_form_screen.dart';
+import 'home_screen.dart';
+import 'partners_screen.dart';
+import '../simulation/indicator_repository.dart';
+import '../simulation/partner_repository.dart';
 import '../main.dart'; // For StyleguideScreen
 
 class MainNavigationScreen extends StatefulWidget {
   final int initialIndex;
+  final IndicatorRepository indicatorRepository;
+  final PartnerRepository partnerRepository;
 
   const MainNavigationScreen({
     super.key,
-    this.initialIndex = 1, // Default to Simulations tab (index 1) as requested
+    this.initialIndex = 1,
+    this.indicatorRepository = const IndicatorRepository(),
+    this.partnerRepository = const PartnerRepository(),
   });
 
   @override
@@ -31,9 +39,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = [
-      const HomeScreenPlaceholder(),
+      HomeScreen(
+        onNavigateToSimulations: () {
+          setState(() {
+            _currentIndex = 1;
+          });
+        },
+        repository: widget.indicatorRepository,
+      ),
       const SimulatorFormScreen(),
-      const PartnersScreenPlaceholder(),
+      PartnersScreen(
+        repository: widget.partnerRepository,
+      ),
       const ProfileScreen(),
     ];
 
@@ -83,148 +100,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 }
 
-// Simple Home Screen Placeholder
-class HomeScreenPlaceholder extends StatelessWidget {
-  const HomeScreenPlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final auth = AuthProviderScope.of(context);
-    final userName = auth.user?.name ?? 'Usuário';
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Olá, $userName',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Bem-vindo de volta ao Meu Correspondente!',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: AppColors.secondary.withOpacity(0.7),
-                ),
-              ),
-              const SizedBox(height: 32),
-              AppCard(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.waving_hand_outlined,
-                      size: 48,
-                      color: AppColors.accent,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Tudo pronto para simular?',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Navegue para a aba "Simulações" no menu abaixo para iniciar um novo cálculo de financiamento imobiliário.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.secondary.withOpacity(0.7),
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Simple Partners Screen Placeholder
-class PartnersScreenPlaceholder extends StatelessWidget {
-  const PartnersScreenPlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Parceiros',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Nossos bancos e correspondentes parceiros.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: AppColors.secondary.withOpacity(0.7),
-                ),
-              ),
-              const SizedBox(height: 32),
-              AppCard(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.handshake_outlined,
-                      size: 48,
-                      color: AppColors.accent,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Novas parcerias em breve',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Estamos conectando os melhores bancos e instituições financeiras para trazer taxas ainda mais competitivas para você.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.secondary.withOpacity(0.7),
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+// The placeholder screens have been replaced by HomeScreen and PartnersScreen.
 
 // Profile Screen with details, Styleguide and Logout
 class ProfileScreen extends StatelessWidget {

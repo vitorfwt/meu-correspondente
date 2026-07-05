@@ -1,0 +1,4 @@
+github: required
+subagents: required
+qa: required
+review: required

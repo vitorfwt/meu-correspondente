@@ -1,0 +1,35 @@
+rules:
+  - name: Explain
+    when:
+      intents: [explain, question, analyze]
+    mode: chat
+
+  - name: Implement
+    when:
+      intents: [implement, fix, create, refactor]
+    mode: implementation
+
+  - name: Hotfix
+    when:
+      labels: [hotfix]
+    mode: quick_fix
+
+  - name: Enterprise
+    when:
+      labels: [epic]
+    mode: enterprise
+
+  - name: Flutter
+    when:
+      paths: ["lib/**","*.dart"]
+    capability: frontend_code
+
+  - name: Backend
+    when:
+      paths: ["src/**","*.cs"]
+    capability: backend_code
+
+  - name: Docker
+    when:
+      paths: ["Dockerfile","docker-compose*.yml"]
+    capability: devops

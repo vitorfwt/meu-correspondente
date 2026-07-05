@@ -1,2 +1,2 @@
 # architect
-Arquitetura
+Recebe contexto pronto.

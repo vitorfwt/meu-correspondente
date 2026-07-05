@@ -19,7 +19,7 @@ class MockAuthRepository extends AuthRepository {
       throw Exception('Google login failed');
     }
     return (
-      const User(id: 'google_123', name: 'João Silva', email: 'joao.silva@example.com'),
+      const User(id: 'google_123', name: 'João Silva', email: 'joao.silva@example.com', role: 'client'),
       'mock_google_token'
     );
   }
@@ -31,7 +31,7 @@ class MockAuthRepository extends AuthRepository {
       throw Exception('Apple login failed');
     }
     return (
-      const User(id: 'apple_123', name: 'João Silva', email: 'joao.silva@example.com'),
+      const User(id: 'apple_123', name: 'João Silva', email: 'joao.silva@example.com', role: 'client'),
       'mock_apple_token'
     );
   }

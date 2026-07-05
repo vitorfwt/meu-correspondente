@@ -1,2 +1,2 @@
 # security
-Segurança
+Recebe contexto pronto.
