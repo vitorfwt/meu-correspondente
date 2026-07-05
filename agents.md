@@ -263,6 +263,9 @@ Validar:
 - Performance básica
 - Regressões
 
+**Diretriz para validação de Frontend:**
+Ao finalizar a validação de tarefas que envolvem interface de usuário (Frontend), o QA deve obrigatoriamente anexar prints da tela do app que foi testada ou insumos visuais que comprovem a validação das telas e componentes visuais.
+
 ---
 
 ## Caso encontre erro
