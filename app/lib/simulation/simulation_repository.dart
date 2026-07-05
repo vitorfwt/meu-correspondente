@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class SimulationInput {
@@ -206,12 +208,22 @@ class BankSimulation {
 
 class SimulationRepository {
   final http.Client? client;
-  final String baseUrl;
+  final String? _baseUrl;
 
   const SimulationRepository({
     this.client,
-    this.baseUrl = 'http://localhost:3000',
-  });
+    String? baseUrl,
+  }) : _baseUrl = baseUrl;
+
+  String get baseUrl {
+    if (_baseUrl != null && _baseUrl!.isNotEmpty) {
+      return _baseUrl!;
+    }
+    if (!kIsWeb && Platform.isAndroid) {
+      return 'http://10.0.2.2:3000';
+    }
+    return 'http://localhost:3000';
+  }
 
   Future<List<BankSimulation>> calculateSimulation(SimulationInput input, {String? token}) async {
     final httpClient = client ?? http.Client();
