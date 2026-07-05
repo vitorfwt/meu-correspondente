@@ -33,6 +33,9 @@ class BankLogo extends StatelessWidget {
       return fallbackIcon;
     }
 
+    const repo = SimulationRepository();
+    final finalUrl = url.startsWith('http') ? url : '${repo.baseUrl}$url';
+
     return Container(
       width: size,
       height: size,
@@ -44,7 +47,7 @@ class BankLogo extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(size * 0.25 - 1),
         child: Image.network(
-          logoUrl!,
+          finalUrl,
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) => fallbackIcon,
           loadingBuilder: (context, child, loadingProgress) {

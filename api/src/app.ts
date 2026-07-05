@@ -21,6 +21,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// Servir arquivos estáticos da pasta public (como logos dos bancos)
+app.use('/public', express.static('public'));
+
 // Registro das rotas públicas de autenticação
 app.use('/api/auth', authRouter);
 

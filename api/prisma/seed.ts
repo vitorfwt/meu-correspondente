@@ -23,7 +23,7 @@ async function main() {
   const institutionsData = [
     {
       name: 'Caixa Econômica Federal',
-      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Caixa_Econ%C3%B4mica_Federal_logo.svg/512px-Caixa_Econ%C3%B4mica_Federal_logo.svg.png',
+      logoUrl: '/public/logos/caixa.png',
       isActive: true,
       rates: [
         { type: 'SAC', rateValue: 0.0999, maxLTV: 0.80, minTerm: 120, maxTerm: 420, maxAge: 80 },
@@ -33,7 +33,7 @@ async function main() {
 
     {
       name: 'Itaú Unibanco',
-      logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Itau_logo.svg/512px-Itau_logo.svg.png',
+      logoUrl: '/public/logos/itau.png',
       isActive: true,
       rates: [
         { type: 'SAC', rateValue: 0.1099, maxLTV: 0.82, minTerm: 120, maxTerm: 420, maxAge: 80 },
