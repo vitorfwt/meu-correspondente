@@ -36,7 +36,7 @@ class _SimulatorFormScreenState extends State<SimulatorFormScreen> {
   double _valorImovel = 500000;
   double _valorEntrada = 100000;
   double _rendaMensal = 10000;
-  int _prazoMeses = 360;
+  int _prazoMeses = 420;
   String _tipoImovel = 'Residencial';
   String _estadoCivil = 'Solteiro(a)';
 

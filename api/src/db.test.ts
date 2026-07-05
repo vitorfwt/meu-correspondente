@@ -43,7 +43,7 @@ describe('Database Integration Tests', () => {
       },
     });
 
-    expect(institutions.length).toBeGreaterThanOrEqual(3);
+    expect(institutions.length).toBeGreaterThanOrEqual(2);
     
     const caixas = institutions.filter(i => i.name.includes('Caixa'));
     expect(caixas.length).toBeGreaterThan(0);

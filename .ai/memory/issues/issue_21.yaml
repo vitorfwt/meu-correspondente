@@ -1,0 +1,11 @@
+owner: dev-front
+capability: frontend_code
+tasks:
+  - name: "Ajustar cor de legendas de amortização no BankSimulationCard para maior contraste"
+    status: "done"
+  - name: "Ajustar tamanho e peso da fonte das tags de amortização para melhorar a legibilidade"
+    status: "done"
+  - name: "Validar visualmente o contraste e a legibilidade sob viewport mobile"
+    status: "done"
+  - name: "Executar testes de widget do Flutter para garantir ausência de regressões (QA)"
+    status: "done"

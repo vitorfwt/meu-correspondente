@@ -30,15 +30,7 @@ async function main() {
         { type: 'Price', rateValue: 0.1025, maxLTV: 0.80, minTerm: 120, maxTerm: 360, maxAge: 80 },
       ],
     },
-    {
-      name: 'Banco do Brasil',
-      logoUrl: 'https://example.com/logos/bb.png',
-      isActive: true,
-      rates: [
-        { type: 'SAC', rateValue: 0.1045, maxLTV: 0.80, minTerm: 120, maxTerm: 420, maxAge: 80 },
-        { type: 'Price', rateValue: 0.1075, maxLTV: 0.80, minTerm: 120, maxTerm: 360, maxAge: 80 },
-      ],
-    },
+
     {
       name: 'Itaú Unibanco',
       logoUrl: 'https://example.com/logos/itau.png',

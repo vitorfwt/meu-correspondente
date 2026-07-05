@@ -6,6 +6,68 @@ import '../components/buttons/secondary_button.dart';
 import '../simulation/simulation_repository.dart';
 import '../auth/auth_provider.dart';
 
+class BankLogo extends StatelessWidget {
+  final String? logoUrl;
+  final double size;
+
+  const BankLogo({super.key, this.logoUrl, this.size = 48});
+
+  @override
+  Widget build(BuildContext context) {
+    final fallbackIcon = Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: AppColors.accent.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(size * 0.25),
+      ),
+      child: Icon(
+        Icons.account_balance_rounded,
+        color: AppColors.primary,
+        size: size * 0.54,
+      ),
+    );
+
+    final url = logoUrl;
+    if (url == null || url.isEmpty) {
+      return fallbackIcon;
+    }
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(size * 0.25),
+        border: Border.all(color: AppColors.lightGrey, width: 1),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(size * 0.25 - 1),
+        child: Image.network(
+          logoUrl!,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) => fallbackIcon,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Center(
+              child: SizedBox(
+                width: size * 0.33,
+                height: size * 0.33,
+                child: CircularProgressIndicator(
+                  strokeWidth: 1.5,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.accent.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
 class SimulationResultScreen extends StatefulWidget {
   final SimulationInput input;
   final SimulationRepository repository;
@@ -499,20 +561,8 @@ class BankSimulationCard extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Logo placeholder
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppColors.accent.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.account_balance_rounded,
-                        color: AppColors.primary,
-                        size: 26,
-                      ),
-                    ),
+                    // Dynamic Bank Logo
+                    BankLogo(logoUrl: simulation.logoUrl, size: 48),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
@@ -541,9 +591,12 @@ class BankSimulationCard extends StatelessWidget {
                             'Taxa: ${simulation.taxaJurosAnual.toStringAsFixed(2)}% a.a. · '
                             '${simulation.taxaJurosMensal.toStringAsFixed(2)}% a.m.',
                             style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.secondary.withOpacity(0.7),
+                              fontSize: isMobile ? 11 : 12,
+                              color: AppColors.secondary,
+                              fontWeight: FontWeight.w600,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           if (isBestOption && isMobile) ...[
                             const SizedBox(height: 6),
@@ -760,19 +813,22 @@ class BankSimulationCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 6),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: tagColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                tag,
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
-                  color: tagColor,
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: tagColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  tag,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: tagColor,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ),
@@ -789,7 +845,7 @@ class BankSimulationCard extends StatelessWidget {
                       r.$1,
                       style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.secondary.withOpacity(0.7),
+                        color: AppColors.secondary.withOpacity(0.95),
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -929,16 +985,7 @@ class _BankDetailsSheet extends StatelessWidget {
             // Header
             Row(
               children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(Icons.account_balance_rounded,
-                      color: AppColors.primary, size: 28),
-                ),
+                BankLogo(logoUrl: simulation.logoUrl, size: 52),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(

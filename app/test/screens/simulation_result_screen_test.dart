@@ -58,8 +58,8 @@ void main() {
             "warnings": []
           },
           {
-            "institutionId": "bb-id",
-            "institutionName": "Banco do Brasil",
+            "institutionId": "santander-id",
+            "institutionName": "Santander",
             "logoUrl": null,
             "propertyValue": 500000.0,
             "downPayment": 150000.0,
@@ -108,7 +108,7 @@ void main() {
 
       // Both bank cards
       expect(find.text('Caixa Econômica Federal'), findsOneWidget);
-      expect(find.text('Banco do Brasil'), findsOneWidget);
+      expect(find.text('Santander'), findsOneWidget);
 
       // Rates — displayed inline with full suffix
       expect(find.textContaining('9.99%'), findsAtLeastNWidgets(1));

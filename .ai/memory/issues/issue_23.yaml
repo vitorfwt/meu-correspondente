@@ -1,0 +1,13 @@
+owner: dev-back
+capability: backend_code
+tasks:
+  - name: "Remover Banco do Brasil da lista de instituições no arquivo de seed da API (api/prisma/seed.ts)"
+    status: "done"
+  - name: "Verificar se as consultas de simulação da API excluem bancos inativos ou não cadastrados"
+    status: "done"
+  - name: "Ajustar mocks de testes de unidade da API que retornam ou testam o Banco do Brasil"
+    status: "done"
+  - name: "Reconstruir o container Docker da API e validar o seed no banco de dados"
+    status: "done"
+  - name: "Executar testes unitários do backend para comprovar ausência de regressões (QA)"
+    status: "done"

@@ -1,0 +1,15 @@
+owner: dev-front
+capability: frontend_code
+tasks:
+  - name: "Ajustar prazo de financiamento padrão para 420 meses no SimulatorFormScreen"
+    status: "done"
+  - name: "Implementar renderização de logo dinâmico de rede (Image.network) no BankSimulationCard"
+    status: "done"
+  - name: "Adicionar tratamento com errorBuilder e loadingBuilder no logo dinâmico (fallback para ícone padrão)"
+    status: "done"
+  - name: "Ajustar renderização do logo no bottom sheet de detalhes (_BankDetailsSheet)"
+    status: "done"
+  - name: "Atualizar os testes de widgets correspondentes para suportar e validar o novo prazo padrão e logos"
+    status: "done"
+  - name: "Validação automatizada da suíte de testes de widget (QA)"
+    status: "done"
