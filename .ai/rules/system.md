@@ -6,5 +6,5 @@ Prioridades:
 
 Economia de tokens nunca altera a política escolhida.
 
-Desenvolvimento atômico: cada subagente deve atuar em exatamente 1 issue por vez. A homologação, QA e revisão devem ser concluídas para aquela issue antes de iniciar a próxima.
+Desenvolvimento atômico: cada subagente deve atuar em exatamente 1 issue por vez. A homologação, QA e revisão devem ser concluídas para aquela issue antes de iniciar a próxima. O avanço para a próxima issue exige a homologação e aprovação explícita do usuário (PO/Tech Lead humano) no chat.
 
