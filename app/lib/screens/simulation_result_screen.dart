@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../design_system/colors.dart';
 import '../components/buttons/primary_button.dart';
 import '../components/buttons/secondary_button.dart';
@@ -37,14 +38,11 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
     });
 
     try {
-      // Obter o token JWT se o usuário estiver logado
       String? token;
       try {
         final auth = AuthProviderScope.of(context);
         token = auth.token;
-      } catch (_) {
-        // Ignora caso não tenha AuthProviderScope (ex: testes de widget isolados)
-      }
+      } catch (_) {}
 
       final results = await widget.repository.calculateSimulation(
         widget.input,
@@ -68,13 +66,10 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
     final parts = stringValue.split('.');
     final integerPart = parts[0];
     final decimalPart = parts[1];
-
     final buffer = StringBuffer();
     int count = 0;
     for (int i = integerPart.length - 1; i >= 0; i--) {
-      if (count > 0 && count % 3 == 0) {
-        buffer.write('.');
-      }
+      if (count > 0 && count % 3 == 0) buffer.write('.');
       buffer.write(integerPart[i]);
       count++;
     }
@@ -96,6 +91,7 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: AppColors.primary,
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       body: SafeArea(
         child: _buildBody(valorFinanciado),
@@ -110,11 +106,12 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+              strokeWidth: 3,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Text(
-              'Simulando propostas...',
+              'Buscando as melhores propostas...',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -133,12 +130,23 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.redAccent),
-              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.wifi_off_rounded,
+                  size: 56,
+                  color: Color(0xFFEF4444),
+                ),
+              ),
+              const SizedBox(height: 24),
               const Text(
-                'Falha na conexão com o servidor',
+                'Falha na conexão',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
                 ),
@@ -150,14 +158,15 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
                 style: TextStyle(
                   fontSize: 14,
                   color: AppColors.secondary.withOpacity(0.7),
+                  height: 1.5,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               PrimaryButton(
                 key: const Key('retry_button'),
                 text: 'Tentar novamente',
-                icon: Icons.refresh,
+                icon: Icons.refresh_rounded,
                 onPressed: _fetchSimulations,
               ),
             ],
@@ -166,16 +175,15 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
       );
     }
 
-    // Encontrar o melhor banco (sem restrições e com menor taxa ou menor custo total)
+    // Sort simulations
     BankSimulation? bestSimulation;
-    final validSims = _simulations.where((s) => s.restricoes.isEmpty).toList();
-    final invalidSims = _simulations.where((s) => s.restricoes.isNotEmpty).toList();
+    final validSims =
+        _simulations.where((s) => s.restricoes.isEmpty).toList();
+    final invalidSims =
+        _simulations.where((s) => s.restricoes.isNotEmpty).toList();
 
-    // Ordenar válidas pelo menor custo total no SAC
     validSims.sort((a, b) => a.totalPagoSac.compareTo(b.totalPagoSac));
-    if (validSims.isNotEmpty) {
-      bestSimulation = validSims.first;
-    }
+    if (validSims.isNotEmpty) bestSimulation = validSims.first;
 
     final sortedSimulations = [...validSims, ...invalidSims];
 
@@ -184,7 +192,7 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Summary Card
+          // ── Summary Card ────────────────────────────────────────────────────
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(24),
@@ -194,12 +202,12 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withOpacity(0.15),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  color: AppColors.primary.withOpacity(0.25),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
@@ -207,107 +215,79 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Resumo do Financiamento',
+                  'RESUMO DO FINANCIAMENTO',
                   style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
+                    color: Colors.white60,
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
+                    letterSpacing: 1.2,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Valor Financiado:',
-                      style: TextStyle(color: Colors.white, fontSize: 15),
-                    ),
-                    Text(
-                      _formatCurrency(valorFinanciado),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Valor do Imóvel:',
-                      style: TextStyle(color: Colors.white70, fontSize: 13),
-                    ),
-                    Text(
-                      _formatCurrency(widget.input.valorImovel),
-                      style: const TextStyle(color: Colors.white70, fontSize: 13),
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Valor da Entrada:',
-                      style: TextStyle(color: Colors.white70, fontSize: 13),
-                    ),
-                    Text(
-                      _formatCurrency(widget.input.valorEntrada),
-                      style: const TextStyle(color: Colors.white70, fontSize: 13),
-                    ),
-                  ],
-                ),
-                const Divider(color: Colors.white24, height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Prazo',
+                          'Valor Financiado',
                           style: TextStyle(color: Colors.white70, fontSize: 12),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         Text(
-                          '${widget.input.prazoMeses} meses',
+                          _formatCurrency(valorFinanciado),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 14,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        const Text(
-                          'Idade do Proponente',
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${widget.input.idade} anos',
-                          style: const TextStyle(
-                            color: AppColors.accent,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Divider(color: Colors.white24, height: 1),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    _buildSummaryChip(
+                      icon: Icons.home_outlined,
+                      label: 'Imóvel',
+                      value: _formatCurrency(widget.input.valorImovel),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildSummaryChip(
+                      icon: Icons.account_balance_wallet_outlined,
+                      label: 'Entrada',
+                      value: _formatCurrency(widget.input.valorEntrada),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    _buildSummaryChip(
+                      icon: Icons.calendar_month_outlined,
+                      label: 'Prazo',
+                      value: '${widget.input.prazoMeses} meses',
+                    ),
+                    const SizedBox(width: 12),
+                    _buildSummaryChip(
+                      icon: Icons.person_outline,
+                      label: 'Idade',
+                      value: '${widget.input.idade} anos',
                     ),
                   ],
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
 
-          // Title
+          // ── Section Title ───────────────────────────────────────────────────
           const Text(
             'Propostas Disponíveis',
             style: TextStyle(
@@ -318,38 +298,51 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Compare as opções de financiamento em amortização constante (SAC) e francesa (PRICE).',
+            'Comparativo entre amortização SAC e PRICE.',
             style: TextStyle(
               fontSize: 13,
-              color: AppColors.secondary.withOpacity(0.7),
+              color: AppColors.secondary.withOpacity(0.6),
             ),
           ),
           const SizedBox(height: 16),
 
-          // List of Banks
+          // ── Bank Cards ──────────────────────────────────────────────────────
           if (sortedSimulations.isEmpty)
-            Card(
-              elevation: 0,
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: AppColors.lightGrey),
-              ),
-              child: const Padding(
-                padding: EdgeInsets.all(24.0),
-                child: Center(
-                  child: Text(
-                    'Nenhum banco disponível para simulação com as condições informadas.',
-                    style: TextStyle(color: AppColors.secondary),
-                    textAlign: TextAlign.center,
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
+                ],
+              ),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.search_off_rounded,
+                        size: 48, color: AppColors.secondary.withOpacity(0.4)),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Nenhum banco disponível para as condições informadas.',
+                      style: TextStyle(
+                          color: AppColors.secondary.withOpacity(0.7),
+                          fontSize: 14),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
             )
           else
             ...sortedSimulations.map((simulation) {
               final isBest = bestSimulation != null &&
-                  simulation.nomeInstituicao == bestSimulation.nomeInstituicao &&
+                  simulation.nomeInstituicao ==
+                      bestSimulation.nomeInstituicao &&
                   simulation.restricoes.isEmpty;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
@@ -357,76 +350,143 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
                   simulation: simulation,
                   isBestOption: isBest,
                   formatCurrency: _formatCurrency,
+                  valorEntrada: widget.input.valorEntrada,
                 ),
               );
             }),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 8),
 
-          // Voltar Button
-          SecondaryButton(
+          // ── CTA Button ──────────────────────────────────────────────────────
+          PrimaryButton(
             key: const Key('result_back_button'),
             text: 'Nova Simulação',
-            icon: Icons.replay,
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
+            icon: Icons.replay_rounded,
+            onPressed: () => Navigator.of(context).pop(),
           ),
           const SizedBox(height: 24),
         ],
       ),
     );
   }
+
+  Widget _buildSummaryChip({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white70, size: 16),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Colors.white60,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
+
+// ─── BankSimulationCard ───────────────────────────────────────────────────────
 
 class BankSimulationCard extends StatelessWidget {
   final BankSimulation simulation;
   final bool isBestOption;
   final String Function(double) formatCurrency;
+  final double valorEntrada;
 
   const BankSimulationCard({
     super.key,
     required this.simulation,
     required this.isBestOption,
     required this.formatCurrency,
+    required this.valorEntrada,
   });
+
+  // Approximate CET = annual rate + 0.3% (insurance estimate)
+  double get _cetAnual => simulation.taxaJurosAnual + 0.3;
+  double get _cetMensal => (simulation.taxaJurosMensal + 0.025);
 
   @override
   Widget build(BuildContext context) {
     final hasRestrictions = simulation.restricoes.isNotEmpty;
-    final cardColor = hasRestrictions ? Colors.white.withOpacity(0.9) : Colors.white;
-    final borderColor = hasRestrictions
-        ? Colors.orange.shade800
-        : (isBestOption ? Colors.green.shade600 : AppColors.lightGrey);
-    final borderThickness = hasRestrictions || isBestOption ? 2.0 : 1.0;
 
-    Widget cardBody = Padding(
-      padding: const EdgeInsets.all(16.0),
+    Widget card = Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: isBestOption
+                ? const Color(0xFF22C55E).withOpacity(0.12)
+                : Colors.black.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: isBestOption
+            ? Border.all(
+                color: const Color(0xFF22C55E).withOpacity(0.4), width: 1.5)
+            : null,
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header of the bank card
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.account_balance,
-                        color: AppColors.primary,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
+          // ── Card Header ─────────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            child: Row(
+              children: [
+                // Logo placeholder
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.account_balance_rounded,
+                    color: AppColors.primary,
+                    size: 26,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
                         simulation.nomeInstituicao,
                         style: const TextStyle(
                           fontSize: 16,
@@ -435,254 +495,527 @@ class BankSimulationCard extends StatelessWidget {
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isBestOption)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.green.shade600, width: 1),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.star, color: Colors.green.shade600, size: 14),
-                      const SizedBox(width: 4),
+                      const SizedBox(height: 2),
                       Text(
-                        'Melhor Opção',
+                        'Taxa: ${simulation.taxaJurosAnual.toStringAsFixed(2)}% a.a. · '
+                        '${simulation.taxaJurosMensal.toStringAsFixed(2)}% a.m.',
                         style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green.shade600,
+                          fontSize: 12,
+                          color: AppColors.secondary.withOpacity(0.7),
                         ),
                       ),
                     ],
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Rates display
-          Row(
-            children: [
-              Text(
-                'Taxa de Juros: ',
-                style: TextStyle(fontSize: 13, color: AppColors.secondary.withOpacity(0.8)),
-              ),
-              Text(
-                '${simulation.taxaJurosAnual.toStringAsFixed(2)}% a.a.',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.secondary,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Text(
-                'Mensal: ',
-                style: TextStyle(fontSize: 13, color: AppColors.secondary.withOpacity(0.8)),
-              ),
-              Text(
-                '${simulation.taxaJurosMensal.toStringAsFixed(2)}% a.m.',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.secondary,
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 24),
-
-          // Comparison of SAC and PRICE
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // SAC Column
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'SAC',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.accent.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Text(
-                            'Decrescente',
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.secondary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '1ª: ${formatCurrency(simulation.primeiraParcelaSac)}',
-                      style: const TextStyle(fontSize: 12, color: AppColors.secondary),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Última: ${formatCurrency(simulation.ultimaParcelaSac)}',
-                      style: const TextStyle(fontSize: 12, color: AppColors.secondary),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Total Pago: ${formatCurrency(simulation.totalPagoSac)}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.secondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Divider column
-              Container(
-                height: 75,
-                width: 1,
-                color: AppColors.lightGrey,
-              ),
-              const SizedBox(width: 12),
-              // PRICE Column
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'PRICE',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.lightGrey,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Text(
-                            'Parcela Fixa',
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.secondary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Parcela: ${formatCurrency(simulation.parcelaPrice)}',
-                      style: const TextStyle(fontSize: 12, color: AppColors.secondary),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Última: Mesmo valor',
-                      style: TextStyle(fontSize: 12, color: AppColors.secondary),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Total Pago: ${formatCurrency(simulation.totalPagoPrice)}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.secondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          // Display restrictions if present
-          if (hasRestrictions) ...[
-            const Divider(height: 24),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: simulation.restricoes.map((restriction) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 6.0),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(8),
+                if (isBestOption)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: Colors.redAccent.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.orange.shade800.withOpacity(0.4)),
+                      color: const Color(0xFF22C55E).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Row(
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.warning_amber_rounded, color: Colors.orange.shade800, size: 16),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            restriction,
-                            style: TextStyle(
-                              color: Colors.orange.shade900,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        Icon(Icons.star_rounded,
+                            color: Color(0xFF22C55E), size: 13),
+                        SizedBox(width: 4),
+                        Text(
+                          'Melhor Opção',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF22C55E),
                           ),
                         ),
                       ],
                     ),
                   ),
-                );
-              }).toList(),
+              ],
+            ),
+          ),
+
+          // ── CET + Entrada ────────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+            child: Row(
+              children: [
+                _buildInfoChip(
+                  label: 'CET Estimado',
+                  value:
+                      '${_cetAnual.toStringAsFixed(2)}% a.a. · ${_cetMensal.toStringAsFixed(2)}% a.m.',
+                  icon: Icons.percent_rounded,
+                  color: const Color(0xFF6366F1),
+                ),
+                const SizedBox(width: 10),
+                _buildInfoChip(
+                  label: 'Valor de Entrada',
+                  value: formatCurrency(valorEntrada),
+                  icon: Icons.account_balance_wallet_outlined,
+                  color: AppColors.accent,
+                ),
+              ],
+            ),
+          ),
+
+          // ── SAC / PRICE Comparison ───────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // SAC
+                Expanded(
+                  child: _buildAmortizationColumn(
+                    label: 'SAC',
+                    tag: 'Parcelas Decrescentes',
+                    tagColor: AppColors.accent,
+                    rows: [
+                      ('1ª Parcela', formatCurrency(simulation.primeiraParcelaSac)),
+                      ('Última Parcela', formatCurrency(simulation.ultimaParcelaSac)),
+                      ('Total Pago', formatCurrency(simulation.totalPagoSac)),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 110,
+                  margin: const EdgeInsets.symmetric(horizontal: 12),
+                  color: AppColors.lightGrey,
+                ),
+                // PRICE
+                Expanded(
+                  child: _buildAmortizationColumn(
+                    label: 'PRICE',
+                    tag: 'Parcela Fixa',
+                    tagColor: const Color(0xFF8B5CF6),
+                    rows: [
+                      ('Parcela', formatCurrency(simulation.parcelaPrice)),
+                      ('Última Parcela', formatCurrency(simulation.parcelaPrice)),
+                      ('Total Pago', formatCurrency(simulation.totalPagoPrice)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Restrictions ─────────────────────────────────────────────────────
+          if (hasRestrictions) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+              child: Column(
+                children: simulation.restricoes.map((r) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444).withOpacity(0.06),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFFEF4444).withOpacity(0.25),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            color: Color(0xFFEF4444),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              r,
+                              style: const TextStyle(
+                                color: Color(0xFFEF4444),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
             ),
           ],
+
+          // ── "Ver Detalhes" Footer Button ─────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+            child: SecondaryButton(
+              key: Key('ver_detalhes_${simulation.nomeInstituicao.replaceAll(' ', '_')}'),
+              text: 'Ver Detalhes',
+              icon: Icons.open_in_new_rounded,
+              onPressed: () => _showDetailsSheet(context),
+            ),
+          ),
         ],
       ),
     );
 
     if (hasRestrictions) {
-      cardBody = Opacity(
-        opacity: 0.45,
-        child: cardBody,
-      );
+      card = Opacity(opacity: 0.5, child: card);
     }
 
-    return Card(
-      elevation: 0,
-      color: cardColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: borderColor,
-          width: borderThickness,
+    return card;
+  }
+
+  Widget _buildAmortizationColumn({
+    required String label,
+    required String tag,
+    required Color tagColor,
+    required List<(String, String)> rows,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: tagColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                tag,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                  color: tagColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        ...rows.map((r) => Padding(
+              padding: const EdgeInsets.only(bottom: 5),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    r.$1,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.secondary.withOpacity(0.7),
+                    ),
+                  ),
+                  Text(
+                    r.$2,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.secondary,
+                    ),
+                  ),
+                ],
+              ),
+            )),
+      ],
+    );
+  }
+
+  Widget _buildInfoChip({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.07),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 12, color: color),
+                const SizedBox(width: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: color.withOpacity(0.9),
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
-      child: cardBody,
     );
+  }
+
+  void _showDetailsSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _BankDetailsSheet(
+        simulation: simulation,
+        valorEntrada: valorEntrada,
+        formatCurrency: formatCurrency,
+        cetAnual: _cetAnual,
+        cetMensal: _cetMensal,
+      ),
+    );
+  }
+}
+
+// ─── Bottom Sheet: Detalhes do Banco ─────────────────────────────────────────
+
+class _BankDetailsSheet extends StatelessWidget {
+  final BankSimulation simulation;
+  final double valorEntrada;
+  final String Function(double) formatCurrency;
+  final double cetAnual;
+  final double cetMensal;
+
+  const _BankDetailsSheet({
+    required this.simulation,
+    required this.valorEntrada,
+    required this.formatCurrency,
+    required this.cetAnual,
+    required this.cetMensal,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: AppColors.lightGrey,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+
+            // Header
+            Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(Icons.account_balance_rounded,
+                      color: AppColors.primary, size: 28),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        simulation.nomeInstituicao,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      Text(
+                        'Detalhes da Proposta',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.secondary.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // Details table
+            _buildSection('Taxas e Custos', [
+              ('Taxa de Juros Anual',
+                  '${simulation.taxaJurosAnual.toStringAsFixed(2)}% a.a.'),
+              ('Taxa de Juros Mensal',
+                  '${simulation.taxaJurosMensal.toStringAsFixed(2)}% a.m.'),
+              ('CET Estimado Anual', '${cetAnual.toStringAsFixed(2)}% a.a.'),
+              ('CET Estimado Mensal',
+                  '${cetMensal.toStringAsFixed(2)}% a.m.'),
+            ]),
+            const SizedBox(height: 16),
+
+            _buildSection('Valores', [
+              ('Valor de Entrada', formatCurrency(valorEntrada)),
+              ('1ª Parcela SAC',
+                  formatCurrency(simulation.primeiraParcelaSac)),
+              ('Última Parcela SAC',
+                  formatCurrency(simulation.ultimaParcelaSac)),
+              ('Total Pago (SAC)', formatCurrency(simulation.totalPagoSac)),
+              ('Parcela PRICE', formatCurrency(simulation.parcelaPrice)),
+              ('Total Pago (PRICE)',
+                  formatCurrency(simulation.totalPagoPrice)),
+            ]),
+
+            const SizedBox(height: 24),
+
+            // Share button
+            SecondaryButton(
+              text: 'Compartilhar Proposta',
+              icon: Icons.share_rounded,
+              onPressed: () => _shareProposta(context),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+              ),
+              child: Text(
+                'Fechar',
+                style: TextStyle(
+                  color: AppColors.secondary.withOpacity(0.7),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSection(String title, List<(String, String)> rows) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: AppColors.secondary,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: rows.asMap().entries.map((entry) {
+              final isLast = entry.key == rows.length - 1;
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          entry.value.$1,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.secondary.withOpacity(0.7),
+                          ),
+                        ),
+                        Text(
+                          entry.value.$2,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!isLast)
+                    const Divider(height: 1, indent: 16, endIndent: 16),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _shareProposta(BuildContext context) {
+    final text = '''📊 Proposta de Financiamento – ${simulation.nomeInstituicao}
+
+💰 Taxa: ${simulation.taxaJurosAnual.toStringAsFixed(2)}% a.a. (${simulation.taxaJurosMensal.toStringAsFixed(2)}% a.m.)
+🧾 CET Estimado: ${cetAnual.toStringAsFixed(2)}% a.a.
+📅 SAC 1ª Parcela: ${formatCurrency(simulation.primeiraParcelaSac)}
+📅 Total SAC: ${formatCurrency(simulation.totalPagoSac)}
+📅 PRICE (parcela fixa): ${formatCurrency(simulation.parcelaPrice)}
+
+Simulado via Meu Correspondente''';
+
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Proposta copiada para a área de transferência!'),
+        duration: Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    Navigator.of(context).pop();
   }
 }
