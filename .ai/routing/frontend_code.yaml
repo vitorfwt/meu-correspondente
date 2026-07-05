@@ -1,0 +1,6 @@
+flow:
+ - planner
+ - po
+ - dev-front
+ - qa
+ - reviewer

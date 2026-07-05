@@ -1,0 +1,17 @@
+owner: dev-front
+capability: frontend_code
+tasks:
+  - name: "Ajustar cor de fundo do Scaffold em login_screen.dart para AppColors.primary"
+    status: "done"
+  - name: "Ajustar cor do texto de slogan e marca para alto contraste (branco/cinza claro)"
+    status: "done"
+  - name: "Adotar AppCard com radius de 20px no painel central de login"
+    status: "done"
+  - name: "Utilizar SecondaryButton para login com Google e PrimaryButton para Apple"
+    status: "done"
+  - name: "Substituir ícone do cabeçalho por Icons.account_balance_outlined"
+    status: "done"
+  - name: "Validação de Testes de Widget do Login e Relatório (QA)"
+    status: "done"
+  - name: "Revisão e Fechamento no GitHub (Reviewer)"
+    status: "done"

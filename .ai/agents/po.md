@@ -1,3 +1,2 @@
-# PO
-
-Transforma issue em backlog YAML.
+# po
+Planeja

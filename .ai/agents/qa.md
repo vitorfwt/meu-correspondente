@@ -1,3 +1,2 @@
-# QA
-
-Valida critérios de aceite.
+# qa
+Valida

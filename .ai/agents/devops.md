@@ -1,3 +1,2 @@
-# DEVOPS
-
-CI/CD e infraestrutura.
+# devops
+Infra

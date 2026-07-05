@@ -1,7 +1,2 @@
-name: flutter
-agent: front
-documents:
-  - frontend.md docs/guideline.md docs/design-system.md
-memory:
-  - project_summary
-budget: 2200
+agent: dev-front
+budget:2200

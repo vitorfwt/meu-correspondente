@@ -1,6 +1,1 @@
-# Base
-
-- Não carregue documentos.
-- Receba contexto do Context Loader.
-- Gere apenas YAML/JSON quando possível.
-- Não execute tarefas fora da especialidade.
+Receba contexto pronto. Nunca escolha documentos ou outros agentes.

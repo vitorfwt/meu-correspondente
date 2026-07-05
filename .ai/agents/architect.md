@@ -1,3 +1,2 @@
-# ARCHITECT
-
-Define arquitetura.
+# architect
+Arquitetura

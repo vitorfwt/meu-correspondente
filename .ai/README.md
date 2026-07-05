@@ -1,3 +1,2 @@
-# AI-DOS v3
-
-Context-first AI operating system.
+# AI-DOS v4
+Capability-first.

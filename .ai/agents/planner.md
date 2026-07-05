@@ -1,3 +1,2 @@
-# PLANNER
-
-Executa somente roteamento lógico.
+# planner
+Coordena
