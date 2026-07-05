@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'auth/auth_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/simulator_form_screen.dart';
+import 'screens/main_navigation_screen.dart';
 import 'design_system/colors.dart';
 import 'design_system/theme.dart';
 import 'components/buttons/primary_button.dart';
@@ -42,7 +43,7 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = AuthProviderScope.of(context);
     if (auth.isAuthenticated) {
-      return const SimulatorFormScreen();
+      return const MainNavigationScreen();
     } else {
       return const LoginScreen();
     }
