@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'app_colors.dart';
+import 'colors.dart';
+import 'radius.dart';
 
 class AppTheme {
   AppTheme._();
@@ -16,7 +17,7 @@ class AppTheme {
         onPrimary: Colors.white,
         secondary: AppColors.secondary,
         onSecondary: Colors.white,
-        error: Colors.redAccent,
+        error: AppColors.error,
         onError: Colors.white,
         surface: Colors.white,
         onSurface: AppColors.primary,
@@ -33,24 +34,24 @@ class AppTheme {
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppRadius.radiusInputs),
           borderSide: const BorderSide(color: AppColors.lightGrey, width: 1.5),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppRadius.radiusInputs),
           borderSide: const BorderSide(color: AppColors.lightGrey, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppRadius.radiusInputs),
           borderSide: const BorderSide(color: AppColors.secondary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+          borderRadius: BorderRadius.circular(AppRadius.radiusInputs),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 2),
+          borderRadius: BorderRadius.circular(AppRadius.radiusInputs),
+          borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
         labelStyle: TextStyle(
           fontFamily: GoogleFonts.poppins().fontFamily,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
+import '../design_system/colors.dart';
+import '../design_system/radius.dart';
 
 enum CustomButtonType { primary, secondary, accent }
 
@@ -52,7 +53,7 @@ class CustomButton extends StatelessWidget {
           disabledBackgroundColor: isButtonEnabled ? null : backgroundColor.withOpacity(0.5),
           disabledForegroundColor: isButtonEnabled ? null : textColor.withOpacity(0.6),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppRadius.radiusButtons),
           ),
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24),

@@ -1,0 +1,9 @@
+institutionName,rateType,rateValue,maxLTV,minTerm,maxTerm,maxAge
+Caixa Econômica Federal,SAC,0.0999,0.80,120,420,80
+Caixa Econômica Federal,Price,0.1025,0.80,120,360,80
+Banco do Brasil,SAC,0.1045,0.80,120,420,80
+Banco do Brasil,Price,0.1075,0.80,120,360,80
+Itaú Unibanco,SAC,0.1099,0.82,120,420,80
+Itaú Unibanco,Price,0.1125,0.82,120,360,80
+Santander,SAC,0.1149,0.80,120,420,75
+Santander,Price,0.1199,0.80,120,360,75

@@ -1,4 +1,4 @@
-import 'package:app/theme/app_colors.dart';
+import 'package:app/design_system/colors.dart';
 import 'package:app/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

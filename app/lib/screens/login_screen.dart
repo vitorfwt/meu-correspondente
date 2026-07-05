@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../auth/auth_provider.dart';
-import '../theme/app_colors.dart';
+import '../design_system/colors.dart';
 import '../widgets/custom_button.dart';
 
 class LoginScreen extends StatelessWidget {
