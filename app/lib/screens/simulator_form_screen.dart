@@ -330,12 +330,14 @@ class _SimulatorFormScreenState extends State<SimulatorFormScreen> {
                     children: [
                       Icon(Icons.home_outlined, color: AppColors.accent),
                       SizedBox(width: 8),
-                      Text(
-                        'Valores do Imóvel',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                      Expanded(
+                        child: Text(
+                          'Valores do Imóvel',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
                     ],
@@ -469,12 +471,14 @@ class _SimulatorFormScreenState extends State<SimulatorFormScreen> {
                     children: [
                       Icon(Icons.person_outline, color: AppColors.accent),
                       SizedBox(width: 8),
-                      Text(
-                        'Perfil do Comprador',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                      Expanded(
+                        child: Text(
+                          'Perfil do Comprador',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
                     ],
@@ -622,12 +626,14 @@ class _SimulatorFormScreenState extends State<SimulatorFormScreen> {
                     children: [
                       Icon(Icons.assignment_outlined, color: AppColors.accent),
                       SizedBox(width: 8),
-                      Text(
-                        'Detalhes do Financiamento',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                      Expanded(
+                        child: Text(
+                          'Detalhes do Financiamento',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
                     ],
@@ -730,6 +736,7 @@ class _SimulatorFormScreenState extends State<SimulatorFormScreen> {
         child: SecondaryButton(
           key: Key('quick_pct_${label.replaceAll('%', '')}'),
           text: label,
+          isCompact: true,
           onPressed: () {
             setState(() {
               _valorEntrada = _valorImovel * pct;

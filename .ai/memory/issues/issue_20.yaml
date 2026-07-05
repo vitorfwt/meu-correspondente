@@ -1,0 +1,14 @@
+issue: 20
+tasks:
+  - name: "Cadastro da Issue no Board do GitHub"
+    status: "done"
+  - name: "Análise de Causa Raiz de Overflows no Formulário (Planner/PO)"
+    status: "done"
+  - name: "Refatorar Barra de Ações (Voltar/Avançar) para evitar overflow no celular (FRONT)"
+    status: "done"
+  - name: "Refatorar Botões de Porcentagem Rápida para formato compacto (FRONT)"
+    status: "done"
+  - name: "Validação de QA em Viewport Estreita (QA)"
+    status: "done"
+  - name: "Revisão Final e Fechamento (Reviewer)"
+    status: "done"

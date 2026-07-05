@@ -36,7 +36,7 @@ class PrimaryButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.radiusButtons),
           ),
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
         onPressed: isButtonEnabled ? onPressed : null,
         child: isLoading

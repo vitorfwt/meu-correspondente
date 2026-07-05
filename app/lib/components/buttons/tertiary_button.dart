@@ -34,7 +34,7 @@ class TertiaryButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.radiusButtons),
           ),
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
         onPressed: isButtonEnabled ? onPressed : null,
         child: isLoading
@@ -54,12 +54,15 @@ class TertiaryButton extends StatelessWidget {
                     Icon(icon, size: 20),
                     const SizedBox(width: 8),
                   ],
-                  Text(
-                    text,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: isButtonEnabled ? textColor : textColor.withOpacity(0.5),
+                  Flexible(
+                    child: Text(
+                      text,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: isButtonEnabled ? textColor : textColor.withOpacity(0.5),
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],

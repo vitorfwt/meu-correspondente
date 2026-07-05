@@ -64,14 +64,17 @@ class StepTitle extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              titles[currentStep],
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+            Expanded(
+              child: Text(
+                titles[currentStep],
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
               ),
             ),
+            const SizedBox(width: 8),
             Text(
               'Passo ${currentStep + 1} de $totalSteps',
               style: TextStyle(

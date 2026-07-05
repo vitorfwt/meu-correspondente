@@ -8,6 +8,7 @@ class SecondaryButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
   final IconData? icon;
+  final bool isCompact;
 
   const SecondaryButton({
     super.key,
@@ -15,16 +16,20 @@ class SecondaryButton extends StatelessWidget {
     this.onPressed,
     this.isLoading = false,
     this.icon,
+    this.isCompact = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final isButtonEnabled = onPressed != null && !isLoading;
     const borderAndTextColor = AppColors.accent; // Turquoise (#2EC4B6)
+    final buttonHeight = isCompact ? 40.0 : 56.0;
+    final horizontalPadding = isCompact ? 8.0 : 16.0;
+    final fontSize = isCompact ? 13.0 : 16.0;
 
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: buttonHeight,
       child: OutlinedButton(
         style: OutlinedButton.styleFrom(
           backgroundColor: Colors.transparent,
@@ -35,18 +40,18 @@ class SecondaryButton extends StatelessWidget {
           ),
           disabledForegroundColor: borderAndTextColor.withOpacity(0.5),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.radiusButtons),
+            borderRadius: BorderRadius.circular(isCompact ? 10.0 : AppRadius.radiusButtons),
           ),
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
         ),
         onPressed: isButtonEnabled ? onPressed : null,
         child: isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
+            ? SizedBox(
+                width: isCompact ? 16 : 24,
+                height: isCompact ? 16 : 24,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
+                  strokeWidth: 2.0,
                   valueColor: AlwaysStoppedAnimation<Color>(borderAndTextColor),
                 ),
               )
@@ -55,14 +60,14 @@ class SecondaryButton extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (icon != null) ...[
-                    Icon(icon, size: 20),
-                    const SizedBox(width: 8),
+                    Icon(icon, size: isCompact ? 16 : 20),
+                    SizedBox(width: isCompact ? 4 : 8),
                   ],
                   Flexible(
                     child: Text(
                       text,
                       style: GoogleFonts.poppins(
-                        fontSize: 16,
+                        fontSize: fontSize,
                         fontWeight: FontWeight.w600,
                         color: isButtonEnabled ? borderAndTextColor : borderAndTextColor.withOpacity(0.5),
                       ),

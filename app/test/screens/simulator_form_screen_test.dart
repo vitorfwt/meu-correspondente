@@ -289,5 +289,71 @@ void main() {
       await tester.pump();
       expect(find.widgetWithText(TextFormField, '250000'), findsOneWidget);
     });
+
+    testWidgets(
+        'Renders all steps on narrow screen (360px) without horizontal overflow',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      // Step 1
+      expect(find.byKey(const Key('valor_imovel_field')), findsOneWidget);
+      expect(find.byKey(const Key('valor_entrada_field')), findsOneWidget);
+      expect(find.byKey(const Key('quick_pct_20')), findsOneWidget);
+      expect(find.byKey(const Key('quick_pct_30')), findsOneWidget);
+      expect(find.byKey(const Key('quick_pct_40')), findsOneWidget);
+      expect(find.byKey(const Key('quick_pct_50')), findsOneWidget);
+
+      await tester.enterText(
+          find.byKey(const Key('valor_imovel_field')), '500000');
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('quick_pct_20')));
+      await tester.pump();
+
+      expect(tester.takeException(), isNull, reason: 'Step 1 initial/entry');
+
+      await tester.tap(find.byKey(const Key('simulate_button')));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull, reason: 'Step 1 transition');
+
+      // Step 2
+      expect(find.byKey(const Key('renda_mensal_field')), findsOneWidget);
+      expect(find.byKey(const Key('data_nascimento_field')), findsOneWidget);
+      expect(find.byKey(const Key('estado_civil_dropdown')), findsOneWidget);
+
+      await tester.enterText(
+          find.byKey(const Key('renda_mensal_field')), '10000');
+      await tester.pump();
+      await tester.enterText(
+          find.byKey(const Key('data_nascimento_field')), '15/05/1990');
+      await tester.pump();
+
+      expect(tester.takeException(), isNull, reason: 'Step 2 inputs');
+
+      await tester.tap(find.byKey(const Key('simulate_button')));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull, reason: 'Step 2 transition');
+
+      // Step 3
+      expect(find.byKey(const Key('tipo_imovel_dropdown')), findsOneWidget);
+      expect(find.byKey(const Key('prazo_field')), findsOneWidget);
+
+      await tester.enterText(find.byKey(const Key('prazo_field')), '360');
+      await tester.pump();
+
+      expect(find.byKey(const Key('back_button')), findsOneWidget);
+      expect(find.byKey(const Key('simulate_button')), findsOneWidget);
+
+      expect(tester.takeException(), isNull, reason: 'Step 3 final');
+    });
   });
 }
