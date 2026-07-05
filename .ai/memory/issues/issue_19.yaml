@@ -1,0 +1,14 @@
+issue: 19
+tasks:
+  - name: "Análise de Causa Raiz (UX/QA)"
+    status: "done"
+  - name: "Cadastro do Bug no Board do GitHub"
+    status: "done"
+  - name: "Implementação de Layout Responsivo com LayoutBuilder no BankSimulationCard (FRONT)"
+    status: "done"
+  - name: "Validação Automatizada de Testes de Widget no Flutter (QA)"
+    status: "done"
+  - name: "Validação Manual / Relatório de Testes (QA)"
+    status: "done"
+  - name: "Revisão e Fechamento (Reviewer)"
+    status: "done"

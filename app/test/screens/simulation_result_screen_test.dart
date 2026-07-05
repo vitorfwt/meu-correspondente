@@ -233,5 +233,60 @@ void main() {
       expect(find.text('Caixa Econômica Federal'), findsOneWidget);
       expect(callCount, 2);
     });
+
+    testWidgets('Adapts to narrow screen (360px) without horizontal overflow',
+        (WidgetTester tester) async {
+      final mockSuccessClient = MockClient((request) async {
+        final listJson = [
+          {
+            "institutionId": "caixa-id",
+            "institutionName": "Caixa Econômica Federal",
+            "logoUrl": null,
+            "propertyValue": 500000.0,
+            "downPayment": 150000.0,
+            "financedAmount": 350000.0,
+            "term": 360,
+            "sac": {
+              "rateValue": 0.0999,
+              "monthlyRate": 0.008,
+              "firstPayment": 3200.0,
+              "lastPayment": 1200.0,
+              "totalCost": 792000.0,
+              "warnings": []
+            },
+            "price": {
+              "rateValue": 0.0999,
+              "monthlyRate": 0.008,
+              "firstPayment": 3000.0,
+              "lastPayment": 3000.0,
+              "totalCost": 1080000.0,
+              "warnings": []
+            },
+            "warnings": []
+          }
+        ];
+        return http.Response(jsonEncode(listJson), 200);
+      });
+
+      final repository = SimulationRepository(client: mockSuccessClient);
+
+      // Set narrow screen dimension
+      await tester.binding.setSurfaceSize(const Size(360, 800));
+
+      try {
+        await tester.pumpWidget(buildTestWidget(repository));
+        await tester.pumpAndSettle();
+
+        // Check if elements are displayed
+        expect(find.text('Caixa Econômica Federal'), findsOneWidget);
+        expect(find.text('CET Estimado'), findsOneWidget);
+
+        // Ensure no exception occurred (such as overflow error)
+        expect(tester.takeException(), isNull);
+      } finally {
+        // Reset to default surface size
+        await tester.binding.setSurfaceSize(null);
+      }
+    });
   });
 }

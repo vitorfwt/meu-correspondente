@@ -228,23 +228,26 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Valor Financiado',
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _formatCurrency(valorFinanciado),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Valor Financiado',
+                            style: TextStyle(color: Colors.white70, fontSize: 12),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+                          Text(
+                            _formatCurrency(valorFinanciado),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -433,239 +436,308 @@ class BankSimulationCard extends StatelessWidget {
     required this.valorEntrada,
   });
 
-  // Approximate CET = annual rate + 0.3% (insurance estimate)
   double get _cetAnual => simulation.taxaJurosAnual + 0.3;
   double get _cetMensal => (simulation.taxaJurosMensal + 0.025);
 
-  @override
-  Widget build(BuildContext context) {
-    final hasRestrictions = simulation.restricoes.isNotEmpty;
-
-    Widget card = Container(
-      width: double.infinity,
+  Widget _buildBestOptionBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF22C55E).withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: isBestOption
-                ? const Color(0xFF22C55E).withOpacity(0.12)
-                : Colors.black.withOpacity(0.06),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: isBestOption
-            ? Border.all(
-                color: const Color(0xFF22C55E).withOpacity(0.4), width: 1.5)
-            : null,
       ),
-      child: Column(
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Card Header ─────────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-            child: Row(
-              children: [
-                // Logo placeholder
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppColors.accent.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.account_balance_rounded,
-                    color: AppColors.primary,
-                    size: 26,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        simulation.nomeInstituicao,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Taxa: ${simulation.taxaJurosAnual.toStringAsFixed(2)}% a.a. · '
-                        '${simulation.taxaJurosMensal.toStringAsFixed(2)}% a.m.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.secondary.withOpacity(0.7),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (isBestOption)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF22C55E).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.star_rounded,
-                            color: Color(0xFF22C55E), size: 13),
-                        SizedBox(width: 4),
-                        Text(
-                          'Melhor Opção',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF22C55E),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-
-          // ── CET + Entrada ────────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-            child: Row(
-              children: [
-                _buildInfoChip(
-                  label: 'CET Estimado',
-                  value:
-                      '${_cetAnual.toStringAsFixed(2)}% a.a. · ${_cetMensal.toStringAsFixed(2)}% a.m.',
-                  icon: Icons.percent_rounded,
-                  color: const Color(0xFF6366F1),
-                ),
-                const SizedBox(width: 10),
-                _buildInfoChip(
-                  label: 'Valor de Entrada',
-                  value: formatCurrency(valorEntrada),
-                  icon: Icons.account_balance_wallet_outlined,
-                  color: AppColors.accent,
-                ),
-              ],
-            ),
-          ),
-
-          // ── SAC / PRICE Comparison ───────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // SAC
-                Expanded(
-                  child: _buildAmortizationColumn(
-                    label: 'SAC',
-                    tag: 'Parcelas Decrescentes',
-                    tagColor: AppColors.accent,
-                    rows: [
-                      ('1ª Parcela', formatCurrency(simulation.primeiraParcelaSac)),
-                      ('Última Parcela', formatCurrency(simulation.ultimaParcelaSac)),
-                      ('Total Pago', formatCurrency(simulation.totalPagoSac)),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: 1,
-                  height: 110,
-                  margin: const EdgeInsets.symmetric(horizontal: 12),
-                  color: AppColors.lightGrey,
-                ),
-                // PRICE
-                Expanded(
-                  child: _buildAmortizationColumn(
-                    label: 'PRICE',
-                    tag: 'Parcela Fixa',
-                    tagColor: const Color(0xFF8B5CF6),
-                    rows: [
-                      ('Parcela', formatCurrency(simulation.parcelaPrice)),
-                      ('Última Parcela', formatCurrency(simulation.parcelaPrice)),
-                      ('Total Pago', formatCurrency(simulation.totalPagoPrice)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ── Restrictions ─────────────────────────────────────────────────────
-          if (hasRestrictions) ...[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-              child: Column(
-                children: simulation.restricoes.map((r) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEF4444).withOpacity(0.06),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: const Color(0xFFEF4444).withOpacity(0.25),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.warning_amber_rounded,
-                            color: Color(0xFFEF4444),
-                            size: 16,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              r,
-                              style: const TextStyle(
-                                color: Color(0xFFEF4444),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ],
-
-          // ── "Ver Detalhes" Footer Button ─────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
-            child: SecondaryButton(
-              key: Key('ver_detalhes_${simulation.nomeInstituicao.replaceAll(' ', '_')}'),
-              text: 'Ver Detalhes',
-              icon: Icons.open_in_new_rounded,
-              onPressed: () => _showDetailsSheet(context),
+          Icon(Icons.star_rounded, color: Color(0xFF22C55E), size: 13),
+          SizedBox(width: 4),
+          Text(
+            'Melhor Opção',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF22C55E),
             ),
           ),
         ],
       ),
     );
+  }
 
-    if (hasRestrictions) {
-      card = Opacity(opacity: 0.5, child: card);
-    }
+  @override
+  Widget build(BuildContext context) {
+    final hasRestrictions = simulation.restricoes.isNotEmpty;
 
-    return card;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 460;
+
+        Widget card = Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: isBestOption
+                    ? const Color(0xFF22C55E).withOpacity(0.12)
+                    : Colors.black.withOpacity(0.06),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            border: isBestOption
+                ? Border.all(
+                    color: const Color(0xFF22C55E).withOpacity(0.4), width: 1.5)
+                : null,
+          ),
+          child: Column(
+            children: [
+              // ── Card Header ─────────────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Logo placeholder
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.account_balance_rounded,
+                        color: AppColors.primary,
+                        size: 26,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  simulation.nomeInstituicao,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (isBestOption && !isMobile)
+                                _buildBestOptionBadge(),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Taxa: ${simulation.taxaJurosAnual.toStringAsFixed(2)}% a.a. · '
+                            '${simulation.taxaJurosMensal.toStringAsFixed(2)}% a.m.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.secondary.withOpacity(0.7),
+                            ),
+                          ),
+                          if (isBestOption && isMobile) ...[
+                            const SizedBox(height: 6),
+                            _buildBestOptionBadge(),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── CET + Entrada ────────────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                child: isMobile
+                    ? Column(
+                        children: [
+                          _buildInfoChip(
+                            label: 'CET Estimado',
+                            value:
+                                '${_cetAnual.toStringAsFixed(2)}% a.a. · ${_cetMensal.toStringAsFixed(2)}% a.m.',
+                            icon: Icons.percent_rounded,
+                            color: const Color(0xFF6366F1),
+                            isMobile: true,
+                          ),
+                          const SizedBox(height: 10),
+                          _buildInfoChip(
+                            label: 'Valor de Entrada',
+                            value: formatCurrency(valorEntrada),
+                            icon: Icons.account_balance_wallet_outlined,
+                            color: AppColors.accent,
+                            isMobile: true,
+                          ),
+                        ],
+                      )
+                    : Row(
+                        children: [
+                          _buildInfoChip(
+                            label: 'CET Estimado',
+                            value:
+                                '${_cetAnual.toStringAsFixed(2)}% a.a. · ${_cetMensal.toStringAsFixed(2)}% a.m.',
+                            icon: Icons.percent_rounded,
+                            color: const Color(0xFF6366F1),
+                            isMobile: false,
+                          ),
+                          const SizedBox(width: 10),
+                          _buildInfoChip(
+                            label: 'Valor de Entrada',
+                            value: formatCurrency(valorEntrada),
+                            icon: Icons.account_balance_wallet_outlined,
+                            color: AppColors.accent,
+                            isMobile: false,
+                          ),
+                        ],
+                      ),
+              ),
+
+              // ── SAC / PRICE Comparison ───────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: isMobile
+                    ? Column(
+                        children: [
+                          _buildAmortizationColumn(
+                            label: 'SAC',
+                            tag: 'Parcelas Decrescentes',
+                            tagColor: AppColors.accent,
+                            rows: [
+                              ('1ª Parcela', formatCurrency(simulation.primeiraParcelaSac)),
+                              ('Última Parcela', formatCurrency(simulation.ultimaParcelaSac)),
+                              ('Total Pago', formatCurrency(simulation.totalPagoSac)),
+                            ],
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Divider(color: AppColors.lightGrey, height: 1),
+                          ),
+                          _buildAmortizationColumn(
+                            label: 'PRICE',
+                            tag: 'Parcela Fixa',
+                            tagColor: const Color(0xFF8B5CF6),
+                            rows: [
+                              ('Parcela', formatCurrency(simulation.parcelaPrice)),
+                              ('Última Parcela', formatCurrency(simulation.parcelaPrice)),
+                              ('Total Pago', formatCurrency(simulation.totalPagoPrice)),
+                            ],
+                          ),
+                        ],
+                      )
+                    : Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _buildAmortizationColumn(
+                              label: 'SAC',
+                              tag: 'Parcelas Decrescentes',
+                              tagColor: AppColors.accent,
+                              rows: [
+                                ('1ª Parcela', formatCurrency(simulation.primeiraParcelaSac)),
+                                ('Última Parcela', formatCurrency(simulation.ultimaParcelaSac)),
+                                ('Total Pago', formatCurrency(simulation.totalPagoSac)),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            width: 1,
+                            height: 110,
+                            margin: const EdgeInsets.symmetric(horizontal: 12),
+                            color: AppColors.lightGrey,
+                          ),
+                          Expanded(
+                            child: _buildAmortizationColumn(
+                              label: 'PRICE',
+                              tag: 'Parcela Fixa',
+                              tagColor: const Color(0xFF8B5CF6),
+                              rows: [
+                                ('Parcela', formatCurrency(simulation.parcelaPrice)),
+                                ('Última Parcela', formatCurrency(simulation.parcelaPrice)),
+                                ('Total Pago', formatCurrency(simulation.totalPagoPrice)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+
+              // ── Restrictions ─────────────────────────────────────────────────────
+              if (hasRestrictions) ...[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                  child: Column(
+                    children: simulation.restricoes.map((r) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEF4444).withOpacity(0.06),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: const Color(0xFFEF4444).withOpacity(0.25),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.warning_amber_rounded,
+                                color: Color(0xFFEF4444),
+                                size: 16,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  r,
+                                  style: const TextStyle(
+                                    color: Color(0xFFEF4444),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+
+              // ── "Ver Detalhes" Footer Button ─────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+                child: SecondaryButton(
+                  key: Key('ver_detalhes_${simulation.nomeInstituicao.replaceAll(' ', '_')}'),
+                  text: 'Ver Detalhes',
+                  icon: Icons.open_in_new_rounded,
+                  onPressed: () => _showDetailsSheet(context),
+                ),
+              ),
+            ],
+          ),
+        );
+
+        if (hasRestrictions) {
+          card = Opacity(opacity: 0.5, child: card);
+        }
+
+        return card;
+      },
+    );
   }
 
   Widget _buildAmortizationColumn({
@@ -712,19 +784,26 @@ class BankSimulationCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    r.$1,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppColors.secondary.withOpacity(0.7),
+                  Expanded(
+                    child: Text(
+                      r.$1,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.secondary.withOpacity(0.7),
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Text(
-                    r.$2,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.secondary,
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      r.$2,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.secondary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -739,45 +818,53 @@ class BankSimulationCard extends StatelessWidget {
     required String value,
     required IconData icon,
     required Color color,
+    required bool isMobile,
   }) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.07),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 12, color: color),
-                const SizedBox(width: 4),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: color,
-                  ),
+    final child = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.15)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 12, color: color),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: color,
                 ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: color.withOpacity(0.9),
               ),
-              overflow: TextOverflow.ellipsis,
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: color.withOpacity(0.9),
             ),
-          ],
-        ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
+
+    if (isMobile) {
+      return SizedBox(
+        width: double.infinity,
+        child: child,
+      );
+    }
+    return Expanded(child: child);
   }
 
   void _showDetailsSheet(BuildContext context) {

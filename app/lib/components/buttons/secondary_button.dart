@@ -58,12 +58,15 @@ class SecondaryButton extends StatelessWidget {
                     Icon(icon, size: 20),
                     const SizedBox(width: 8),
                   ],
-                  Text(
-                    text,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: isButtonEnabled ? borderAndTextColor : borderAndTextColor.withOpacity(0.5),
+                  Flexible(
+                    child: Text(
+                      text,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: isButtonEnabled ? borderAndTextColor : borderAndTextColor.withOpacity(0.5),
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
