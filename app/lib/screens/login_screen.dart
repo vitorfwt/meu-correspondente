@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../auth/auth_provider.dart';
 import '../design_system/colors.dart';
-import '../widgets/custom_button.dart';
+import '../components/buttons/primary_button.dart';
+import '../components/buttons/secondary_button.dart';
+import '../components/cards/app_card.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -24,7 +26,7 @@ class LoginScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.primary,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -55,7 +57,7 @@ class LoginScreen extends StatelessWidget {
                           ],
                         ),
                         child: const Icon(
-                          Icons.account_balance,
+                          Icons.account_balance_outlined,
                           size: 64,
                           color: AppColors.accent,
                         ),
@@ -68,7 +70,7 @@ class LoginScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                        color: AppColors.background,
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -78,29 +80,15 @@ class LoginScreen extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 15,
-                        color: AppColors.secondary,
+                        color: AppColors.lightGrey,
                         height: 1.4,
                       ),
                     ),
                     const SizedBox(height: 60),
 
                     // Authentication Card
-                    Container(
+                    AppCard(
                       padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withOpacity(0.04),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                        border: Border.all(
-                          color: AppColors.lightGrey.withOpacity(0.5),
-                        ),
-                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -124,11 +112,10 @@ class LoginScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 24),
 
-                          // Google Login Button
-                          CustomButton(
+                           // Google Login Button
+                          SecondaryButton(
                             key: const Key('google_login_button'),
                             text: 'Entrar com Google',
-                            type: CustomButtonType.secondary,
                             isLoading: authProvider.isLoading,
                             icon: Icons.g_mobiledata,
                             onPressed: authProvider.isLoading
@@ -138,10 +125,9 @@ class LoginScreen extends StatelessWidget {
                           const SizedBox(height: 16),
 
                           // Apple Login Button
-                          CustomButton(
+                          PrimaryButton(
                             key: const Key('apple_login_button'),
                             text: 'Entrar com Apple',
-                            type: CustomButtonType.primary,
                             isLoading: authProvider.isLoading,
                             icon: Icons.apple,
                             onPressed: authProvider.isLoading
@@ -159,7 +145,7 @@ class LoginScreen extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.secondary.withOpacity(0.6),
+                        color: AppColors.lightGrey.withOpacity(0.8),
                         height: 1.4,
                       ),
                     ),

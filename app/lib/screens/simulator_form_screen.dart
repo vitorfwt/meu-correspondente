@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../auth/auth_provider.dart';
 import '../design_system/colors.dart';
-import '../widgets/custom_button.dart';
+import '../components/buttons/primary_button.dart';
+import '../components/buttons/secondary_button.dart';
+import '../components/buttons/tertiary_button.dart';
+import '../components/cards/app_card.dart';
 import '../simulation/simulation_repository.dart';
 import 'simulation_result_screen.dart';
 import '../main.dart'; // For StyleguideScreen navigation
@@ -276,416 +279,391 @@ class _SimulatorFormScreenState extends State<SimulatorFormScreen> {
                 const SizedBox(height: 24),
 
                 // CARD 1: Valores
-                Card(
-                  elevation: 0,
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: const BorderSide(color: AppColors.lightGrey),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.home, color: AppColors.accent),
-                            SizedBox(width: 8),
-                            Text(
-                              'Valores do Imóvel',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
-                              ),
+                AppCard(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.home, color: AppColors.accent),
+                          SizedBox(width: 8),
+                          Text(
+                            'Valores do Imóvel',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
                             ),
-                          ],
-                        ),
-                        const Divider(height: 24),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 24),
 
-                        // Valor do Imóvel
-                        const Text(
-                          'Valor do Imóvel (R\$)',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.secondary,
-                          ),
+                      // Valor do Imóvel
+                      const Text(
+                        'Valor do Imóvel (R\$)',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.secondary,
                         ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          key: const Key('valor_imovel_field'),
-                          controller: _valorImovelController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            hintText: 'Ex: 500000',
-                            helperText: 'Valor selecionado: ${_formatCurrencyCompact(_valorImovel)}',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Informe o valor do imóvel';
-                            }
-                            final val = double.tryParse(value);
-                            if (val == null || val < 100000 || val > 5000000) {
-                              return 'O valor do imóvel deve ser entre R\$ 100.000 e R\$ 5.000.000';
-                            }
-                            return null;
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        key: const Key('valor_imovel_field'),
+                        controller: _valorImovelController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          hintText: 'Ex: 500000',
+                          helperText: 'Valor selecionado: ${_formatCurrencyCompact(_valorImovel)}',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Informe o valor do imóvel';
+                          }
+                          final val = double.tryParse(value);
+                          if (val == null || val < 100000 || val > 5000000) {
+                            return 'O valor do imóvel deve ser entre R\$ 100.000 e R\$ 5.000.000';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          activeTrackColor: AppColors.accent,
+                          inactiveTrackColor: AppColors.lightGrey,
+                          thumbColor: AppColors.accent,
+                          overlayColor: AppColors.accent.withOpacity(0.2),
+                        ),
+                        child: Slider(
+                          key: const Key('valor_imovel_slider'),
+                          value: _valorImovel,
+                          min: 100000,
+                          max: 5000000,
+                          divisions: 98, // De 50k em 50k
+                          onChanged: (val) {
+                            setState(() {
+                              _valorImovel = val;
+                              _valorImovelController.text = val.round().toString();
+                            });
                           },
                         ),
-                        const SizedBox(height: 8),
-                        SliderTheme(
-                          data: SliderTheme.of(context).copyWith(
-                            activeTrackColor: AppColors.accent,
-                            inactiveTrackColor: AppColors.lightGrey,
-                            thumbColor: AppColors.accent,
-                            overlayColor: AppColors.accent.withOpacity(0.2),
-                          ),
-                          child: Slider(
-                            key: const Key('valor_imovel_slider'),
-                            value: _valorImovel,
-                            min: 100000,
-                            max: 5000000,
-                            divisions: 98, // De 50k em 50k
-                            onChanged: (val) {
-                              setState(() {
-                                _valorImovel = val;
-                                _valorImovelController.text = val.round().toString();
-                              });
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 16),
+                      ),
+                      const SizedBox(height: 16),
 
-                        // Valor de Entrada
-                        const Text(
-                          'Valor de Entrada (R\$)',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.secondary,
-                          ),
+                      // Valor de Entrada
+                      const Text(
+                        'Valor de Entrada (R\$)',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.secondary,
                         ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          key: const Key('valor_entrada_field'),
-                          controller: _entradaController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            hintText: 'Ex: 100000',
-                            helperText: 'Entrada mínima sugerida (20%): ${_formatCurrencyCompact(_valorImovel * 0.2)}',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Informe o valor de entrada';
-                            }
-                            final val = double.tryParse(value);
-                            if (val == null) {
-                              return 'Valor inválido';
-                            }
-                            final minEntrada = _valorImovel * 0.2;
-                            if (val < minEntrada) {
-                              return 'Entrada mínima de 20% (${_formatCurrencyCompact(minEntrada)})';
-                            }
-                            if (val > _valorImovel) {
-                              return 'A entrada não pode ser maior que o valor do imóvel';
-                            }
-                            return null;
-                          },
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        key: const Key('valor_entrada_field'),
+                        controller: _entradaController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          hintText: 'Ex: 100000',
+                          helperText: 'Entrada mínima sugerida (20%): ${_formatCurrencyCompact(_valorImovel * 0.2)}',
                         ),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _buildQuickPercentButton('20%', 0.2),
-                            _buildQuickPercentButton('30%', 0.3),
-                            _buildQuickPercentButton('40%', 0.4),
-                            _buildQuickPercentButton('50%', 0.5),
-                          ],
-                        ),
-                      ],
-                    ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Informe o valor de entrada';
+                          }
+                          final val = double.tryParse(value);
+                          if (val == null) {
+                            return 'Valor inválido';
+                          }
+                          final minEntrada = _valorImovel * 0.2;
+                          if (val < minEntrada) {
+                            return 'Entrada mínima de 20% (${_formatCurrencyCompact(minEntrada)})';
+                          }
+                          if (val > _valorImovel) {
+                            return 'A entrada não pode ser maior que o valor do imóvel';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildQuickPercentButton('20%', 0.2),
+                          _buildQuickPercentButton('30%', 0.3),
+                          _buildQuickPercentButton('40%', 0.4),
+                          _buildQuickPercentButton('50%', 0.5),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 16),
 
                 // CARD 2: Perfil do Comprador
-                Card(
-                  elevation: 0,
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: const BorderSide(color: AppColors.lightGrey),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.person, color: AppColors.accent),
-                            SizedBox(width: 8),
-                            Text(
-                              'Perfil do Comprador',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Divider(height: 24),
-
-                        // Renda Familiar Mensal
-                        const Text(
-                          'Renda Familiar Mensal (R\$)',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.secondary,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          key: const Key('renda_mensal_field'),
-                          controller: _rendaController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            hintText: 'Ex: 10000',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Informe a renda mensal';
-                            }
-                            final val = double.tryParse(value);
-                            if (val == null || val <= 0) {
-                              return 'A renda familiar mensal deve ser maior que zero';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Data de Nascimento
-                        const Text(
-                          'Data de Nascimento',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.secondary,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          key: const Key('data_nascimento_field'),
-                          controller: _dataNascimentoController,
-                          keyboardType: TextInputType.datetime,
-                          decoration: InputDecoration(
-                            hintText: 'DD/MM/AAAA',
-                            suffixIcon: IconButton(
-                              key: const Key('calendar_button'),
-                              icon: const Icon(Icons.calendar_today, color: AppColors.secondary),
-                              onPressed: () async {
-                                final picked = await showDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.now().subtract(const Duration(days: 365 * 30)),
-                                  firstDate: DateTime(1900),
-                                  lastDate: DateTime.now(),
-                                );
-                                if (picked != null) {
-                                  final formatted =
-                                      '${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}';
-                                  _dataNascimentoController.text = formatted;
-                                }
-                              },
+                AppCard(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.person, color: AppColors.accent),
+                          SizedBox(width: 8),
+                          Text(
+                            'Perfil do Comprador',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
                             ),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Informe a data de nascimento';
-                            }
-                            final date = _parseDate(value);
-                            if (date == null) {
-                              return 'Formato inválido (DD/MM/AAAA)';
-                            }
-                            // Calculate age
-                            final hoje = DateTime.now();
-                            int idade = hoje.year - date.year;
-                            if (hoje.month < date.month ||
-                                (hoje.month == date.month && hoje.day < date.day)) {
-                              idade--;
-                            }
-                            if (idade < 18 || idade > 80) {
-                              return 'O proponente deve ter entre 18 e 80 anos';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
+                        ],
+                      ),
+                      const Divider(height: 24),
 
-                        // Estado Civil
-                        const Text(
-                          'Estado Civil',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.secondary,
+                      // Renda Familiar Mensal
+                      const Text(
+                        'Renda Familiar Mensal (R\$)',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        key: const Key('renda_mensal_field'),
+                        controller: _rendaController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          hintText: 'Ex: 10000',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Informe a renda mensal';
+                          }
+                          final val = double.tryParse(value);
+                          if (val == null || val <= 0) {
+                            return 'A renda familiar mensal deve ser maior que zero';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Data de Nascimento
+                      const Text(
+                        'Data de Nascimento',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        key: const Key('data_nascimento_field'),
+                        controller: _dataNascimentoController,
+                        keyboardType: TextInputType.datetime,
+                        decoration: InputDecoration(
+                          hintText: 'DD/MM/AAAA',
+                          suffixIcon: IconButton(
+                            key: const Key('calendar_button'),
+                            icon: const Icon(Icons.calendar_today, color: AppColors.secondary),
+                            onPressed: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now().subtract(const Duration(days: 365 * 30)),
+                                firstDate: DateTime(1900),
+                                lastDate: DateTime.now(),
+                              );
+                              if (picked != null) {
+                                final formatted =
+                                    '${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}';
+                                _dataNascimentoController.text = formatted;
+                              }
+                            },
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        DropdownButtonFormField<String>(
-                          key: const Key('estado_civil_dropdown'),
-                          value: _estadoCivil,
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          ),
-                          items: <String>['Solteiro(a)', 'Casado(a)', 'Divorciado(a)', 'Viúvo(a)']
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                          onChanged: (String? newValue) {
-                            if (newValue != null) {
-                              setState(() {
-                                _estadoCivil = newValue;
-                              });
-                            }
-                          },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Informe a data de nascimento';
+                          }
+                          final date = _parseDate(value);
+                          if (date == null) {
+                            return 'Formato inválido (DD/MM/AAAA)';
+                          }
+                          // Calculate age
+                          final hoje = DateTime.now();
+                          int idade = hoje.year - date.year;
+                          if (hoje.month < date.month ||
+                              (hoje.month == date.month && hoje.day < date.day)) {
+                            idade--;
+                          }
+                          if (idade < 18 || idade > 80) {
+                            return 'O proponente deve ter entre 18 e 80 anos';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Estado Civil
+                      const Text(
+                        'Estado Civil',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.secondary,
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        key: const Key('estado_civil_dropdown'),
+                        value: _estadoCivil,
+                        decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                        items: <String>['Solteiro(a)', 'Casado(a)', 'Divorciado(a)', 'Viúvo(a)']
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              _estadoCivil = newValue;
+                            });
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 16),
 
                 // CARD 3: Detalhes do Financiamento
-                Card(
-                  elevation: 0,
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: const BorderSide(color: AppColors.lightGrey),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.assignment, color: AppColors.accent),
-                            SizedBox(width: 8),
-                            Text(
-                              'Detalhes do Financiamento',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
-                              ),
+                AppCard(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.assignment, color: AppColors.accent),
+                          SizedBox(width: 8),
+                          Text(
+                            'Detalhes do Financiamento',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
                             ),
-                          ],
-                        ),
-                        const Divider(height: 24),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 24),
 
-                        // Tipo de Imóvel
-                        const Text(
-                          'Tipo do Imóvel',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.secondary,
-                          ),
+                      // Tipo de Imóvel
+                      const Text(
+                        'Tipo do Imóvel',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.secondary,
                         ),
-                        const SizedBox(height: 8),
-                        DropdownButtonFormField<String>(
-                          key: const Key('tipo_imovel_dropdown'),
-                          value: _tipoImovel,
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          ),
-                          items: <String>['Residencial', 'Comercial']
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                          onChanged: (String? newValue) {
-                            if (newValue != null) {
-                              setState(() {
-                                _tipoImovel = newValue;
-                              });
-                            }
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        key: const Key('tipo_imovel_dropdown'),
+                        value: _tipoImovel,
+                        decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                        items: <String>['Residencial', 'Comercial']
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              _tipoImovel = newValue;
+                            });
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Prazo em Meses
+                      const Text(
+                        'Prazo do Financiamento (Meses)',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        key: const Key('prazo_field'),
+                        controller: _prazoController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          hintText: 'Ex: 360',
+                          helperText: 'Prazo selecionado: $_prazoMeses meses (${(_prazoMeses / 12).toStringAsFixed(1)} anos)',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Informe o prazo';
+                          }
+                          final val = int.tryParse(value);
+                          if (val == null || val < 12 || val > 420) {
+                            return 'O prazo deve ser entre 12 e 420 meses';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          activeTrackColor: AppColors.accent,
+                          inactiveTrackColor: AppColors.lightGrey,
+                          thumbColor: AppColors.accent,
+                          overlayColor: AppColors.accent.withOpacity(0.2),
+                        ),
+                        child: Slider(
+                          key: const Key('prazo_slider'),
+                          value: _prazoMeses.toDouble(),
+                          min: 12,
+                          max: 420,
+                          divisions: 34, // Saltos de 12 meses (1 ano)
+                          onChanged: (val) {
+                            setState(() {
+                              _prazoMeses = val.round();
+                              _prazoController.text = val.round().toString();
+                            });
                           },
                         ),
-                        const SizedBox(height: 16),
-
-                        // Prazo em Meses
-                        const Text(
-                          'Prazo do Financiamento (Meses)',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.secondary,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          key: const Key('prazo_field'),
-                          controller: _prazoController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            hintText: 'Ex: 360',
-                            helperText: 'Prazo selecionado: $_prazoMeses meses (${(_prazoMeses / 12).toStringAsFixed(1)} anos)',
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Informe o prazo';
-                            }
-                            final val = int.tryParse(value);
-                            if (val == null || val < 12 || val > 420) {
-                              return 'O prazo deve ser entre 12 e 420 meses';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        SliderTheme(
-                          data: SliderTheme.of(context).copyWith(
-                            activeTrackColor: AppColors.accent,
-                            inactiveTrackColor: AppColors.lightGrey,
-                            thumbColor: AppColors.accent,
-                            overlayColor: AppColors.accent.withOpacity(0.2),
-                          ),
-                          child: Slider(
-                            key: const Key('prazo_slider'),
-                            value: _prazoMeses.toDouble(),
-                            min: 12,
-                            max: 420,
-                            divisions: 34, // Saltos de 12 meses (1 ano)
-                            onChanged: (val) {
-                              setState(() {
-                                _prazoMeses = val.round();
-                                _prazoController.text = val.round().toString();
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 24),
 
                 // Botão de Simulação
-                CustomButton(
+                PrimaryButton(
                   key: const Key('simulate_button'),
                   text: 'Simular Financiamento',
-                  type: CustomButtonType.accent,
                   isLoading: _isLoading,
                   icon: Icons.monetization_on_outlined,
                   onPressed: _submitForm,
@@ -703,29 +681,15 @@ class _SimulatorFormScreenState extends State<SimulatorFormScreen> {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4.0),
-        child: OutlinedButton(
+        child: SecondaryButton(
           key: Key('quick_pct_${label.replaceAll('%', '')}'),
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            side: const BorderSide(color: AppColors.lightGrey),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
+          text: label,
           onPressed: () {
             setState(() {
               _valorEntrada = _valorImovel * pct;
               _entradaController.text = _valorEntrada.round().toString();
             });
           },
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.secondary,
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-            ),
-          ),
         ),
       ),
     );

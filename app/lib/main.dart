@@ -6,7 +6,10 @@ import 'screens/login_screen.dart';
 import 'screens/simulator_form_screen.dart';
 import 'design_system/colors.dart';
 import 'design_system/theme.dart';
-import 'widgets/custom_button.dart';
+import 'components/buttons/primary_button.dart';
+import 'components/buttons/secondary_button.dart';
+import 'components/buttons/tertiary_button.dart';
+import 'components/cards/app_card.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -333,89 +336,142 @@ class _StyleguideScreenState extends State<StyleguideScreen> {
   }
 
   Widget _buildButtonsShowcase() {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppColors.lightGrey),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // State display
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Cliques no botão: $_buttonTapCount',
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.secondary),
+    return AppCard(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header info
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Cliques no botão: $_buttonTapCount',
+                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.secondary),
+              ),
+              ElevatedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _buttonTapCount = 0;
+                  });
+                },
+                icon: const Icon(Icons.refresh, size: 14),
+                label: const Text('Zerar', style: TextStyle(fontSize: 12)),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
-                Row(
-                  children: [
-                    const Text('Loading:', style: TextStyle(fontSize: 12)),
-                    Switch(
-                      value: _isLoadingButton,
-                      onChanged: (value) {
-                        setState(() {
-                          _isLoadingButton = value;
-                        });
-                      },
-                      activeColor: AppColors.accent,
-                    ),
-                  ],
+              ),
+            ],
+          ),
+          const Divider(height: 32),
+
+          // Primary Button Section
+          const Text('1. Primary Button (Fundo Turquesa #2EC4B6)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 12),
+          const Text('Estado Normal:', style: TextStyle(fontSize: 13, color: Colors.grey)),
+          const SizedBox(height: 8),
+          PrimaryButton(
+            text: 'Acessar Conta (Normal)',
+            onPressed: _onButtonPressed,
+          ),
+          const SizedBox(height: 12),
+          const Text('Estado Carregando:', style: TextStyle(fontSize: 13, color: Colors.grey)),
+          const SizedBox(height: 8),
+          const PrimaryButton(
+            text: 'Carregando...',
+            isLoading: true,
+            onPressed: null,
+          ),
+          const SizedBox(height: 12),
+          const Text('Estado Desabilitado:', style: TextStyle(fontSize: 13, color: Colors.grey)),
+          const SizedBox(height: 8),
+          const PrimaryButton(
+            text: 'Indisponível (Desabilitado)',
+            onPressed: null,
+          ),
+          const SizedBox(height: 24),
+
+          // Secondary Button Section
+          const Text('2. Secondary Button (Borda Turquesa, Fundo Transparente)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 12),
+          const Text('Estado Normal:', style: TextStyle(fontSize: 13, color: Colors.grey)),
+          const SizedBox(height: 8),
+          SecondaryButton(
+            text: 'Fazer Cadastro (Normal)',
+            icon: Icons.person_add_outlined,
+            onPressed: _onButtonPressed,
+          ),
+          const SizedBox(height: 12),
+          const Text('Estado Carregando:', style: TextStyle(fontSize: 13, color: Colors.grey)),
+          const SizedBox(height: 8),
+          const SecondaryButton(
+            text: 'Carregando...',
+            isLoading: true,
+            onPressed: null,
+          ),
+          const SizedBox(height: 12),
+          const Text('Estado Desabilitado:', style: TextStyle(fontSize: 13, color: Colors.grey)),
+          const SizedBox(height: 8),
+          const SecondaryButton(
+            text: 'Indisponível (Desabilitado)',
+            onPressed: null,
+          ),
+          const SizedBox(height: 24),
+
+          // Tertiary Button Section
+          const Text('3. Tertiary Button (Sem Fundo, Texto Azul Médio #1B4965)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 12),
+          const Text('Estado Normal:', style: TextStyle(fontSize: 13, color: Colors.grey)),
+          const SizedBox(height: 8),
+          TertiaryButton(
+            text: 'Esqueceu a senha? (Normal)',
+            icon: Icons.help_outline,
+            onPressed: _onButtonPressed,
+          ),
+          const SizedBox(height: 12),
+          const Text('Estado Carregando:', style: TextStyle(fontSize: 13, color: Colors.grey)),
+          const SizedBox(height: 8),
+          const TertiaryButton(
+            text: 'Carregando...',
+            isLoading: true,
+            onPressed: null,
+          ),
+          const SizedBox(height: 12),
+          const Text('Estado Desabilitado:', style: TextStyle(fontSize: 13, color: Colors.grey)),
+          const SizedBox(height: 8),
+          const TertiaryButton(
+            text: 'Indisponível (Desabilitado)',
+            onPressed: null,
+          ),
+          const SizedBox(height: 24),
+
+          // AppCard Showcase explicit callout
+          const Divider(height: 32),
+          const Text('4. AppCard (Fundo Branco, Radius 20px, Sombra Suave)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 12),
+          AppCard(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: AppColors.lightGrey,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.info_outline, color: AppColors.secondary),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Text(
+                    'Este é um exemplo de AppCard oficial, que possui sombra muito leve, radius de 20px e serve como base para elementos de conteúdo no aplicativo.',
+                    style: TextStyle(fontSize: 13, height: 1.4),
+                  ),
                 ),
               ],
             ),
-            const Divider(height: 24),
-            
-            // Primary Button
-            const Text('Primary Button (#0D1B2A)', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            CustomButton(
-              text: 'Acessar Conta',
-              type: CustomButtonType.primary,
-              isLoading: _isLoadingButton,
-              onPressed: _onButtonPressed,
-            ),
-            const SizedBox(height: 20),
-
-            // Secondary Button
-            const Text('Secondary Button (#1B4965)', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            CustomButton(
-              text: 'Fazer Cadastro',
-              type: CustomButtonType.secondary,
-              isLoading: _isLoadingButton,
-              icon: Icons.person_add_outlined,
-              onPressed: _onButtonPressed,
-            ),
-            const SizedBox(height: 20),
-
-            // Accent Button
-            const Text('Accent Button (#2EC4B6)', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            CustomButton(
-              text: 'Simular Empréstimo',
-              type: CustomButtonType.accent,
-              isLoading: _isLoadingButton,
-              icon: Icons.monetization_on_outlined,
-              onPressed: _onButtonPressed,
-            ),
-            const SizedBox(height: 20),
-
-            // Disabled state showcase
-            const Text('Disabled State (onPressed: null)', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            const CustomButton(
-              text: 'Indisponível',
-              type: CustomButtonType.primary,
-              onPressed: null,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

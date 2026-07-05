@@ -1,57 +1,37 @@
 import 'package:flutter/material.dart';
-import '../design_system/colors.dart';
-import '../design_system/radius.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../design_system/colors.dart';
+import '../../design_system/radius.dart';
 
-enum CustomButtonType { primary, secondary, accent }
-
-class CustomButton extends StatelessWidget {
+class PrimaryButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
-  final CustomButtonType type;
   final bool isLoading;
   final IconData? icon;
 
-  const CustomButton({
+  const PrimaryButton({
     super.key,
     required this.text,
     this.onPressed,
-    this.type = CustomButtonType.primary,
     this.isLoading = false,
     this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Determine colors based on type
-    final Color backgroundColor;
-    final Color textColor;
-    
-    switch (type) {
-      case CustomButtonType.primary:
-        backgroundColor = AppColors.primary;
-        textColor = Colors.white;
-        break;
-      case CustomButtonType.secondary:
-        backgroundColor = AppColors.secondary;
-        textColor = Colors.white;
-        break;
-      case CustomButtonType.accent:
-        backgroundColor = AppColors.accent;
-        textColor = AppColors.primary; // Contrast with teal
-        break;
-    }
-
     final isButtonEnabled = onPressed != null && !isLoading;
-    
+    const backgroundColor = AppColors.accent; // Turquoise (#2EC4B6)
+    const textColor = Colors.white;
+
     return SizedBox(
       width: double.infinity,
-      height: 56, // Modern premium size
+      height: 56,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
           foregroundColor: textColor,
-          disabledBackgroundColor: isButtonEnabled ? null : backgroundColor.withOpacity(0.5),
-          disabledForegroundColor: isButtonEnabled ? null : textColor.withOpacity(0.6),
+          disabledBackgroundColor: backgroundColor.withOpacity(0.5),
+          disabledForegroundColor: textColor.withOpacity(0.6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.radiusButtons),
           ),
@@ -60,7 +40,7 @@ class CustomButton extends StatelessWidget {
         ),
         onPressed: isButtonEnabled ? onPressed : null,
         child: isLoading
-            ? SizedBox(
+            ? const SizedBox(
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
@@ -78,9 +58,10 @@ class CustomButton extends StatelessWidget {
                   ],
                   Text(
                     text,
-                    style: const TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
+                      color: textColor,
                     ),
                   ),
                 ],

@@ -5,7 +5,6 @@ import 'package:app/auth/auth_provider.dart';
 import 'package:app/auth/auth_repository.dart';
 import 'package:app/screens/login_screen.dart';
 import 'package:app/main.dart';
-import 'package:app/widgets/custom_button.dart';
 
 class MockAuthRepository extends AuthRepository {
   final bool shouldFail;
@@ -160,7 +159,7 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.account_balance), findsOneWidget);
+      expect(find.byIcon(Icons.account_balance_outlined), findsOneWidget);
       expect(find.text('Meu Correspondente'), findsOneWidget);
       expect(find.textContaining('Sua conexão direta'), findsOneWidget);
       expect(find.text('Entrar com Google'), findsOneWidget);

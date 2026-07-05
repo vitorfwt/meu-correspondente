@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../design_system/colors.dart';
-import '../widgets/custom_button.dart';
+import '../components/buttons/primary_button.dart';
+import '../components/buttons/secondary_button.dart';
 import '../simulation/simulation_repository.dart';
 import '../auth/auth_provider.dart';
 
@@ -153,10 +154,9 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              CustomButton(
+              PrimaryButton(
                 key: const Key('retry_button'),
                 text: 'Tentar novamente',
-                type: CustomButtonType.primary,
                 icon: Icons.refresh,
                 onPressed: _fetchSimulations,
               ),
@@ -364,10 +364,9 @@ class _SimulationResultScreenState extends State<SimulationResultScreen> {
           const SizedBox(height: 20),
 
           // Voltar Button
-          CustomButton(
+          SecondaryButton(
             key: const Key('result_back_button'),
             text: 'Nova Simulação',
-            type: CustomButtonType.primary,
             icon: Icons.replay,
             onPressed: () {
               Navigator.of(context).pop();
