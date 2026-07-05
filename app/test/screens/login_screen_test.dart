@@ -223,10 +223,16 @@ void main() {
       await tester.tap(find.byKey(const Key('google_login_button')));
       await tester.pumpAndSettle();
 
-      expect(find.text('Olá, João Silva'), findsOneWidget);
-      expect(find.text('Styleguide & Design System'), findsOneWidget);
+      // Should now be on SimulatorFormScreen
+      expect(find.text('Simulador de Financiamento'), findsOneWidget);
+      expect(find.text('Faça uma Simulação'), findsOneWidget);
 
-      await tester.tap(find.byKey(const Key('logout_button')));
+      // Open drawer
+      await tester.tap(find.byIcon(Icons.menu));
+      await tester.pumpAndSettle();
+
+      // Tap logout drawer tile
+      await tester.tap(find.byKey(const Key('drawer_logout_tile')));
       await tester.pumpAndSettle();
 
       expect(find.text('Meu Correspondente'), findsOneWidget);

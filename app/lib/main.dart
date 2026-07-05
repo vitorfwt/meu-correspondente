@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth/auth_provider.dart';
 import 'screens/login_screen.dart';
+import 'screens/simulator_form_screen.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_theme.dart';
 import 'widgets/custom_button.dart';
@@ -38,7 +39,7 @@ class AuthWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = AuthProviderScope.of(context);
     if (auth.isAuthenticated) {
-      return const StyleguideScreen();
+      return const SimulatorFormScreen();
     } else {
       return const LoginScreen();
     }
