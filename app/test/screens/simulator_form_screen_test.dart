@@ -37,7 +37,6 @@ void main() {
     }
 
     void configureScreenSize(WidgetTester tester) {
-      // Set a very tall height of 2000 to fit all cards and button on screen without scrolling
       tester.view.physicalSize = const Size(800, 2000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -46,117 +45,146 @@ void main() {
       });
     }
 
-    testWidgets('Renders all inputs, sliders, and submit button', (WidgetTester tester) async {
+    testWidgets('Renders step indicator and step 1 fields initially',
+        (WidgetTester tester) async {
       configureScreenSize(tester);
       await tester.pumpWidget(buildTestWidget());
 
-      // Fields
+      // Step indicator
+      expect(find.byKey(const Key('step_indicator')), findsOneWidget);
+
+      // Step 1 fields visible
       expect(find.byKey(const Key('valor_imovel_field')), findsOneWidget);
       expect(find.byKey(const Key('valor_entrada_field')), findsOneWidget);
-      expect(find.byKey(const Key('renda_mensal_field')), findsOneWidget);
-      expect(find.byKey(const Key('data_nascimento_field')), findsOneWidget);
-      expect(find.byKey(const Key('estado_civil_dropdown')), findsOneWidget);
-      expect(find.byKey(const Key('tipo_imovel_dropdown')), findsOneWidget);
-      expect(find.byKey(const Key('prazo_field')), findsOneWidget);
-
-      // Sliders
       expect(find.byKey(const Key('valor_imovel_slider')), findsOneWidget);
-      expect(find.byKey(const Key('prazo_slider')), findsOneWidget);
 
-      // Action button
+      // Step 2 fields NOT visible yet
+      expect(find.byKey(const Key('renda_mensal_field')), findsNothing);
+      expect(find.byKey(const Key('data_nascimento_field')), findsNothing);
+
+      // Navigate button
       expect(find.byKey(const Key('simulate_button')), findsOneWidget);
     });
 
-    testWidgets('Shows error if entry value is less than 20% of property value', (WidgetTester tester) async {
+    testWidgets('Shows error if entry value is less than 20% of property value',
+        (WidgetTester tester) async {
       configureScreenSize(tester);
       await tester.pumpWidget(buildTestWidget());
 
-      // Configure a R$ 500.000 property and R$ 90.000 entry (which is 18%, i.e. < 20%)
-      await tester.enterText(find.byKey(const Key('valor_imovel_field')), '500000');
+      // Step 1: Fill invalid entry (< 20%)
+      await tester.enterText(
+          find.byKey(const Key('valor_imovel_field')), '500000');
       await tester.pump();
-      await tester.enterText(find.byKey(const Key('valor_entrada_field')), '90000');
-      await tester.pump();
-      await tester.enterText(find.byKey(const Key('renda_mensal_field')), '10000');
-      await tester.pump();
-      await tester.enterText(find.byKey(const Key('data_nascimento_field')), '15/05/1990');
-      await tester.pump();
-      await tester.enterText(find.byKey(const Key('prazo_field')), '360');
+      await tester.enterText(
+          find.byKey(const Key('valor_entrada_field')), '90000');
       await tester.pump();
 
-      final simulateButton = find.byKey(const Key('simulate_button'));
-      await tester.tap(simulateButton);
+      // Try to advance - should fail validation
+      await tester.tap(find.byKey(const Key('simulate_button')));
       await tester.pumpAndSettle();
 
-      // Should show the validation error
       expect(find.text('Entrada mínima de 20% (R\$ 100.000)'), findsOneWidget);
     });
 
-    testWidgets('Shows error if monthly income is zero or negative', (WidgetTester tester) async {
+    testWidgets('Shows error if monthly income is zero or negative',
+        (WidgetTester tester) async {
       configureScreenSize(tester);
       await tester.pumpWidget(buildTestWidget());
 
-      await tester.enterText(find.byKey(const Key('valor_imovel_field')), '500000');
+      // Advance past step 1 with valid data
+      await tester.enterText(
+          find.byKey(const Key('valor_imovel_field')), '500000');
       await tester.pump();
-      await tester.enterText(find.byKey(const Key('valor_entrada_field')), '150000');
+      await tester.enterText(
+          find.byKey(const Key('valor_entrada_field')), '150000');
       await tester.pump();
-      await tester.enterText(find.byKey(const Key('renda_mensal_field')), '0');
-      await tester.pump();
-      await tester.enterText(find.byKey(const Key('data_nascimento_field')), '15/05/1990');
-      await tester.pump();
-
-      final simulateButton = find.byKey(const Key('simulate_button'));
-      await tester.tap(simulateButton);
+      await tester.tap(find.byKey(const Key('simulate_button')));
       await tester.pumpAndSettle();
 
-      expect(find.text('A renda familiar mensal deve ser maior que zero'), findsOneWidget);
+      // Now on step 2 - enter zero income
+      await tester.enterText(
+          find.byKey(const Key('renda_mensal_field')), '0');
+      await tester.pump();
+      await tester.enterText(
+          find.byKey(const Key('data_nascimento_field')), '15/05/1990');
+      await tester.pump();
+
+      await tester.tap(find.byKey(const Key('simulate_button')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('A renda deve ser maior que zero'), findsOneWidget);
     });
 
-    testWidgets('Shows error if birthdate represents age less than 18 or greater than 80', (WidgetTester tester) async {
+    testWidgets(
+        'Shows error if birthdate represents age less than 18 or greater than 80',
+        (WidgetTester tester) async {
       configureScreenSize(tester);
       await tester.pumpWidget(buildTestWidget());
 
-      await tester.enterText(find.byKey(const Key('valor_imovel_field')), '500000');
+      // Advance past step 1
+      await tester.enterText(
+          find.byKey(const Key('valor_imovel_field')), '500000');
       await tester.pump();
-      await tester.enterText(find.byKey(const Key('valor_entrada_field')), '150000');
+      await tester.enterText(
+          find.byKey(const Key('valor_entrada_field')), '150000');
       await tester.pump();
-      await tester.enterText(find.byKey(const Key('renda_mensal_field')), '10000');
+      await tester.tap(find.byKey(const Key('simulate_button')));
+      await tester.pumpAndSettle();
+
+      // Step 2: fill income, then invalid birthdate (under 18)
+      await tester.enterText(
+          find.byKey(const Key('renda_mensal_field')), '10000');
       await tester.pump();
-      
-      // Proponent under 18 (e.g. born in 2020)
       final dateField = find.byKey(const Key('data_nascimento_field'));
       await tester.enterText(dateField, '15/05/2020');
       await tester.pump();
 
-      final simulateButton = find.byKey(const Key('simulate_button'));
-      await tester.tap(simulateButton);
+      await tester.tap(find.byKey(const Key('simulate_button')));
       await tester.pumpAndSettle();
-      expect(find.text('O proponente deve ter entre 18 e 80 anos'), findsOneWidget);
+      expect(find.text('O proponente deve ter entre 18 e 80 anos'),
+          findsOneWidget);
 
-      // Proponent over 80 (e.g. born in 1930)
+      // Over 80
       await tester.enterText(dateField, '15/05/1930');
       await tester.pump();
-      
-      await tester.tap(simulateButton);
+      await tester.tap(find.byKey(const Key('simulate_button')));
       await tester.pumpAndSettle();
-      expect(find.text('O proponente deve ter entre 18 e 80 anos'), findsOneWidget);
+      expect(find.text('O proponente deve ter entre 18 e 80 anos'),
+          findsOneWidget);
     });
 
-    testWidgets('Shows error if birthdate has invalid format', (WidgetTester tester) async {
+    testWidgets('Shows error if birthdate has invalid format',
+        (WidgetTester tester) async {
       configureScreenSize(tester);
       await tester.pumpWidget(buildTestWidget());
 
+      // Advance past step 1
+      await tester.enterText(
+          find.byKey(const Key('valor_imovel_field')), '500000');
+      await tester.pump();
+      await tester.enterText(
+          find.byKey(const Key('valor_entrada_field')), '150000');
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('simulate_button')));
+      await tester.pumpAndSettle();
+
+      // Step 2: invalid date format
+      await tester.enterText(
+          find.byKey(const Key('renda_mensal_field')), '10000');
+      await tester.pump();
       final dateField = find.byKey(const Key('data_nascimento_field'));
       await tester.enterText(dateField, '12/34/5678');
       await tester.pump();
 
-      final simulateButton = find.byKey(const Key('simulate_button'));
-      await tester.tap(simulateButton);
+      await tester.tap(find.byKey(const Key('simulate_button')));
       await tester.pumpAndSettle();
 
       expect(find.text('Formato inválido (DD/MM/AAAA)'), findsOneWidget);
     });
 
-    testWidgets('Successful form submission calculates simulation and redirects to SimulationResultScreen', (WidgetTester tester) async {
+    testWidgets(
+        'Successful form submission navigates to SimulationResultScreen',
+        (WidgetTester tester) async {
       configureScreenSize(tester);
 
       final mockSuccessClient = MockClient((request) async {
@@ -166,7 +194,7 @@ void main() {
         expect(body['monthlyIncome'], 12000.0);
         expect(body['term'], 360);
         expect(body.containsKey('age'), true);
-        expect(body.containsKey('valorImovel'), false); // ensure no old keys
+        expect(body.containsKey('valorImovel'), false);
 
         final listJson = [
           {
@@ -202,67 +230,63 @@ void main() {
 
       await tester.pumpWidget(buildTestWidget(repository: mockRepository));
 
-      // Correct values
-      await tester.enterText(find.byKey(const Key('valor_imovel_field')), '500000');
+      // Step 1: valid property and entry values
+      await tester.enterText(
+          find.byKey(const Key('valor_imovel_field')), '500000');
       await tester.pump();
-      await tester.enterText(find.byKey(const Key('valor_entrada_field')), '150000');
+      await tester.enterText(
+          find.byKey(const Key('valor_entrada_field')), '150000');
       await tester.pump();
-      await tester.enterText(find.byKey(const Key('renda_mensal_field')), '12000');
+      await tester.tap(find.byKey(const Key('simulate_button')));
+      await tester.pumpAndSettle();
+
+      // Step 2: income and birthdate
+      await tester.enterText(
+          find.byKey(const Key('renda_mensal_field')), '12000');
       await tester.pump();
-      await tester.enterText(find.byKey(const Key('data_nascimento_field')), '15/05/1990');
+      await tester.enterText(
+          find.byKey(const Key('data_nascimento_field')), '15/05/1990');
       await tester.pump();
+      await tester.tap(find.byKey(const Key('simulate_button')));
+      await tester.pumpAndSettle();
+
+      // Step 3: prazo
       await tester.enterText(find.byKey(const Key('prazo_field')), '360');
       await tester.pump();
 
-      final simulateButton = find.byKey(const Key('simulate_button'));
-      await tester.tap(simulateButton);
-      
-      // Pump initial navigation / state changes
+      // Submit
+      await tester.tap(find.byKey(const Key('simulate_button')));
       await tester.pump();
-      
-      // Wait for repository and navigation to settle
       await tester.pumpAndSettle();
 
-      // Now we should be on the SimulationResultScreen
       expect(find.byType(SimulationResultScreen), findsOneWidget);
       expect(find.text('Resultado da Simulação'), findsOneWidget);
-      
-      // Verify values on the result screen
       expect(find.text('SAC'), findsOneWidget);
       expect(find.text('PRICE'), findsOneWidget);
-      
-      // Financed: 500.000 - 150.000 = 350.000
       expect(find.textContaining('R\$ 350.000,00'), findsOneWidget);
 
-      // Tap back button
       final backButton = find.byKey(const Key('result_back_button'));
       await tester.tap(backButton);
       await tester.pumpAndSettle();
 
-      // Should be back on the SimulatorFormScreen
       expect(find.byType(SimulatorFormScreen), findsOneWidget);
     });
 
-    testWidgets('Quick percentage buttons update the entry value field', (WidgetTester tester) async {
+    testWidgets('Quick percentage buttons update the entry value field',
+        (WidgetTester tester) async {
       configureScreenSize(tester);
       await tester.pumpWidget(buildTestWidget());
 
-      // Set property value
-      await tester.enterText(find.byKey(const Key('valor_imovel_field')), '500000');
+      await tester.enterText(
+          find.byKey(const Key('valor_imovel_field')), '500000');
       await tester.pump();
 
-      // Tap 30% button
       await tester.tap(find.byKey(const Key('quick_pct_30')));
       await tester.pump();
-
-      // Value should be 500000 * 0.3 = 150000
       expect(find.widgetWithText(TextFormField, '150000'), findsOneWidget);
-      
-      // Tap 50% button
+
       await tester.tap(find.byKey(const Key('quick_pct_50')));
       await tester.pump();
-
-      // Value should be 500000 * 0.5 = 250000
       expect(find.widgetWithText(TextFormField, '250000'), findsOneWidget);
     });
   });

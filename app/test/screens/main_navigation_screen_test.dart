@@ -53,8 +53,8 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // Tap Home tab (index 0)
-      await tester.tap(find.byIcon(Icons.home_outlined));
+      // Tap Home tab using its label text (avoids icon ambiguity with IndexedStack)
+      await tester.tap(find.text('Início'));
       await tester.pumpAndSettle();
 
       // Verify HomeScreenPlaceholder is shown
