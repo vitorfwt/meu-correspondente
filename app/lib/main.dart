@@ -1,24 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'auth/auth_provider.dart';
+import 'screens/login_screen.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_theme.dart';
 import 'widgets/custom_button.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  runApp(MyApp(prefs: prefs));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final SharedPreferences prefs;
+  const MyApp({super.key, required this.prefs});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Meu Correspondente - Design System',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.themeData,
-      home: const StyleguideScreen(),
+    return AuthProviderScope(
+      notifier: AuthProvider(prefs: prefs),
+      child: MaterialApp(
+        title: 'Meu Correspondente - Design System',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.themeData,
+        home: const AuthWrapper(),
+      ),
     );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = AuthProviderScope.of(context);
+    if (auth.isAuthenticated) {
+      return const StyleguideScreen();
+    } else {
+      return const LoginScreen();
+    }
   }
 }
 
@@ -61,16 +84,17 @@ class _StyleguideScreenState extends State<StyleguideScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = AuthProviderScope.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Meu Correspondente',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              'Olá, ${auth.user?.name ?? "Usuário"}',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
-            Text(
+            const Text(
               'Styleguide & Design System',
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
@@ -80,6 +104,14 @@ class _StyleguideScreenState extends State<StyleguideScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
+          IconButton(
+            key: const Key('logout_button'),
+            icon: const Icon(Icons.logout, color: Colors.redAccent),
+            tooltip: 'Sair',
+            onPressed: () {
+              auth.logout();
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.palette_outlined),
             onPressed: () {

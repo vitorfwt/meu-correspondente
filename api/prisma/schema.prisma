@@ -1,0 +1,61 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id          String              @id @default(uuid())
+  name        String
+  email       String              @unique
+  role        String              // "client" | "broker"
+  createdAt   DateTime            @default(now())
+  simulations SimulationHistory[]
+
+  @@map("users")
+}
+
+model FinancialInstitution {
+  id            String              @id @default(uuid())
+  name          String
+  logoUrl       String?
+  isActive      Boolean             @default(true)
+  interestRates InterestRate[]
+  simulations   SimulationHistory[]
+
+  @@map("institutions")
+}
+
+model InterestRate {
+  id            String               @id @default(uuid())
+  institutionId String
+  institution   FinancialInstitution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  type          String               // "SAC" | "Price"
+  rateValue     Float                // rate value (percentage/decimal)
+  maxLTV        Float                // max Loan-to-Value (percentage/decimal)
+  minTerm       Int
+  maxTerm       Int
+  maxAge        Int
+
+  @@map("interest_rates")
+}
+
+model SimulationHistory {
+  id                    String                @id @default(uuid())
+  userId                String?
+  user                  User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
+  propertyValue         Float
+  downPayment           Float
+  monthlyIncome         Float
+  age                   Int
+  term                  Int
+  selectedInstitutionId String
+  institution           FinancialInstitution  @relation(fields: [selectedInstitutionId], references: [id])
+  resultMonthlyPayment  Float
+  status                String
+  createdAt             DateTime              @default(now())
+
+  @@map("simulations")
+}
