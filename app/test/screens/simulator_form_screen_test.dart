@@ -1,9 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:app/auth/auth_provider.dart';
 import 'package:app/screens/simulator_form_screen.dart';
 import 'package:app/screens/simulation_result_screen.dart';
+import 'package:app/simulation/simulation_repository.dart';
 
 void main() {
   group('SimulatorFormScreen Tests', () {
@@ -21,17 +25,20 @@ void main() {
       authProvider = AuthProvider(prefs: prefs);
     });
 
-    Widget buildTestWidget() {
+    Widget buildTestWidget({SimulationRepository? repository}) {
       return MaterialApp(
         home: AuthProviderScope(
           notifier: authProvider,
-          child: const SimulatorFormScreen(),
+          child: SimulatorFormScreen(
+            repository: repository ?? const SimulationRepository(),
+          ),
         ),
       );
     }
 
     void configureScreenSize(WidgetTester tester) {
-      tester.view.physicalSize = const Size(800, 1200);
+      // Set a very tall height of 2000 to fit all cards and button on screen without scrolling
+      tester.view.physicalSize = const Size(800, 2000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
         tester.view.resetPhysicalSize();
@@ -76,7 +83,8 @@ void main() {
       await tester.enterText(find.byKey(const Key('prazo_field')), '360');
       await tester.pump();
 
-      await tester.tap(find.byKey(const Key('simulate_button')));
+      final simulateButton = find.byKey(const Key('simulate_button'));
+      await tester.tap(simulateButton);
       await tester.pumpAndSettle();
 
       // Should show the validation error
@@ -96,7 +104,8 @@ void main() {
       await tester.enterText(find.byKey(const Key('data_nascimento_field')), '15/05/1990');
       await tester.pump();
 
-      await tester.tap(find.byKey(const Key('simulate_button')));
+      final simulateButton = find.byKey(const Key('simulate_button'));
+      await tester.tap(simulateButton);
       await tester.pumpAndSettle();
 
       expect(find.text('A renda familiar mensal deve ser maior que zero'), findsOneWidget);
@@ -118,7 +127,8 @@ void main() {
       await tester.enterText(dateField, '15/05/2020');
       await tester.pump();
 
-      await tester.tap(find.byKey(const Key('simulate_button')));
+      final simulateButton = find.byKey(const Key('simulate_button'));
+      await tester.tap(simulateButton);
       await tester.pumpAndSettle();
       expect(find.text('O proponente deve ter entre 18 e 80 anos'), findsOneWidget);
 
@@ -126,7 +136,7 @@ void main() {
       await tester.enterText(dateField, '15/05/1930');
       await tester.pump();
       
-      await tester.tap(find.byKey(const Key('simulate_button')));
+      await tester.tap(simulateButton);
       await tester.pumpAndSettle();
       expect(find.text('O proponente deve ter entre 18 e 80 anos'), findsOneWidget);
     });
@@ -139,7 +149,8 @@ void main() {
       await tester.enterText(dateField, '12/34/5678');
       await tester.pump();
 
-      await tester.tap(find.byKey(const Key('simulate_button')));
+      final simulateButton = find.byKey(const Key('simulate_button'));
+      await tester.tap(simulateButton);
       await tester.pumpAndSettle();
 
       expect(find.text('Formato inválido (DD/MM/AAAA)'), findsOneWidget);
@@ -147,7 +158,49 @@ void main() {
 
     testWidgets('Successful form submission calculates simulation and redirects to SimulationResultScreen', (WidgetTester tester) async {
       configureScreenSize(tester);
-      await tester.pumpWidget(buildTestWidget());
+
+      final mockSuccessClient = MockClient((request) async {
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['propertyValue'], 500000.0);
+        expect(body['downPayment'], 150000.0);
+        expect(body['monthlyIncome'], 12000.0);
+        expect(body['term'], 360);
+        expect(body.containsKey('age'), true);
+        expect(body.containsKey('valorImovel'), false); // ensure no old keys
+
+        final listJson = [
+          {
+            "institutionId": "caixa-id",
+            "institutionName": "Caixa Econômica Federal",
+            "logoUrl": null,
+            "propertyValue": 500000.0,
+            "downPayment": 150000.0,
+            "financedAmount": 350000.0,
+            "term": 360,
+            "sac": {
+              "rateValue": 0.0999,
+              "monthlyRate": 0.008,
+              "firstPayment": 3200.0,
+              "lastPayment": 1200.0,
+              "totalCost": 792000.0,
+              "warnings": []
+            },
+            "price": {
+              "rateValue": 0.0999,
+              "monthlyRate": 0.008,
+              "firstPayment": 3000.0,
+              "lastPayment": 3000.0,
+              "totalCost": 1080000.0,
+              "warnings": []
+            },
+            "warnings": []
+          }
+        ];
+        return http.Response(jsonEncode(listJson), 200);
+      });
+      final mockRepository = SimulationRepository(client: mockSuccessClient);
+
+      await tester.pumpWidget(buildTestWidget(repository: mockRepository));
 
       // Correct values
       await tester.enterText(find.byKey(const Key('valor_imovel_field')), '500000');
@@ -161,13 +214,13 @@ void main() {
       await tester.enterText(find.byKey(const Key('prazo_field')), '360');
       await tester.pump();
 
-      await tester.tap(find.byKey(const Key('simulate_button')));
+      final simulateButton = find.byKey(const Key('simulate_button'));
+      await tester.tap(simulateButton);
       
       // Pump initial navigation / state changes
       await tester.pump();
       
-      // Wait for repository delay (600ms)
-      await tester.pump(const Duration(milliseconds: 700));
+      // Wait for repository and navigation to settle
       await tester.pumpAndSettle();
 
       // Now we should be on the SimulationResultScreen
@@ -182,7 +235,8 @@ void main() {
       expect(find.textContaining('R\$ 350.000,00'), findsOneWidget);
 
       // Tap back button
-      await tester.tap(find.byKey(const Key('result_back_button')));
+      final backButton = find.byKey(const Key('result_back_button'));
+      await tester.tap(backButton);
       await tester.pumpAndSettle();
 
       // Should be back on the SimulatorFormScreen

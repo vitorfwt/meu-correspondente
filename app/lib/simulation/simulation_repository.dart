@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:math';
+import 'package:http/http.dart' as http;
 
 class SimulationInput {
   final double valorImovel;
@@ -62,66 +64,189 @@ class SimulationResult {
   });
 }
 
-class SimulationRepository {
-  const SimulationRepository();
+class BankSimulation {
+  final String nomeInstituicao;
+  final String? logoUrl;
+  final double valorFinanciado;
+  final int prazoMeses;
+  final double taxaJurosAnual;
+  final double taxaJurosMensal;
+  final double parcelaPrice;
+  final double primeiraParcelaSac;
+  final double ultimaParcelaSac;
+  final double totalPagoPrice;
+  final double totalPagoSac;
+  final double totalJurosPrice;
+  final double totalJurosSac;
+  final List<String> restricoes;
 
-  Future<SimulationResult> calculateSimulation(SimulationInput input) async {
-    // Simular atraso de rede
-    await Future.delayed(const Duration(milliseconds: 600));
+  const BankSimulation({
+    required this.nomeInstituicao,
+    this.logoUrl,
+    required this.valorFinanciado,
+    required this.prazoMeses,
+    required this.taxaJurosAnual,
+    required this.taxaJurosMensal,
+    required this.parcelaPrice,
+    required this.primeiraParcelaSac,
+    required this.ultimaParcelaSac,
+    required this.totalPagoPrice,
+    required this.totalPagoSac,
+    required this.totalJurosPrice,
+    required this.totalJurosSac,
+    required this.restricoes,
+  });
 
-    final valorFinanciado = input.valorImovel - input.valorEntrada;
-    
-    // Taxa de juros anual mockada (ex: 10.5%)
-    const taxaJurosAnual = 10.5;
-    // Conversão para taxa mensal: (1 + taxaAnual)^(1/12) - 1
-    final taxaJurosMensal = pow(1 + (taxaJurosAnual / 100), 1 / 12) - 1;
-
-    final n = input.prazoMeses;
-    final i = taxaJurosMensal;
-
-    // --- Cálculo PRICE ---
-    // PMT = PV * (i * (1 + i)^n) / ((1 + i)^n - 1)
-    double parcelaPrice = 0.0;
-    if (i > 0) {
-      parcelaPrice = valorFinanciado * (i * pow(1 + i, n)) / (pow(1 + i, n) - 1);
-    } else {
-      parcelaPrice = valorFinanciado / n;
+  factory BankSimulation.fromJson(Map<String, dynamic> json) {
+    double toDouble(dynamic val) {
+      if (val == null) return 0.0;
+      if (val is num) return val.toDouble();
+      return double.tryParse(val.toString()) ?? 0.0;
     }
 
-    final totalPagoPrice = parcelaPrice * n;
-    final totalJurosPrice = totalPagoPrice - valorFinanciado;
+    final sacJson = json['sac'];
+    final priceJson = json['price'];
 
-    // --- Cálculo SAC ---
-    // Amortização constante A = PV / n
-    final amortizacaoSac = valorFinanciado / n;
-    
-    // Primeira Parcela = A + PV * i
-    final primeiraParcelaSac = amortizacaoSac + (valorFinanciado * i);
-    
-    // Última Parcela = A + (PV - (n-1)*A) * i = A + A * i
-    final ultimaParcelaSac = amortizacaoSac + (amortizacaoSac * i);
+    final nomeInstituicaoVal = (json['institutionName'] ?? json['nomeInstituicao'] ?? json['name'] ?? 'Banco') as String;
+    final logoUrlVal = (json['logoUrl'] ?? json['logo_url']) as String?;
+    final valorFinanciadoVal = toDouble(json['financedAmount'] ?? json['valorFinanciado'] ?? json['financedValue']);
+    final prazoMesesVal = (json['term'] ?? json['prazoMeses'] ?? json['termMonths'] ?? json['prazo'] ?? 0) as int;
 
-    // Total pago SAC: Somatório das parcelas
-    // P_k = A + (PV - (k-1)*A) * i
-    // Total = n * A + i * [ PV * n - A * n * (n-1) / 2 ]
-    // Como A = PV/n, Total = PV + i * PV * (n + 1) / 2
-    final totalJurosSac = i * valorFinanciado * (n + 1) / 2;
-    final totalPagoSac = valorFinanciado + totalJurosSac;
+    double taxaJurosAnualVal = 0.0;
+    double taxaJurosMensalVal = 0.0;
 
-    return SimulationResult(
-      valorImovel: input.valorImovel,
-      valorEntrada: input.valorEntrada,
-      valorFinanciado: valorFinanciado,
-      prazoMeses: n,
-      taxaJurosAnual: taxaJurosAnual,
-      taxaJurosMensal: i * 100, // em percentual
-      parcelaPrice: parcelaPrice,
-      primeiraParcelaSac: primeiraParcelaSac,
-      ultimaParcelaSac: ultimaParcelaSac,
-      totalPagoPrice: totalPagoPrice,
-      totalPagoSac: totalPagoSac,
-      totalJurosPrice: totalJurosPrice,
-      totalJurosSac: totalJurosSac,
+    if (sacJson is Map<String, dynamic>) {
+      taxaJurosAnualVal = toDouble(sacJson['rateValue']) * 100;
+      taxaJurosMensalVal = toDouble(sacJson['monthlyRate']) * 100;
+    } else if (priceJson is Map<String, dynamic>) {
+      taxaJurosAnualVal = toDouble(priceJson['rateValue']) * 100;
+      taxaJurosMensalVal = toDouble(priceJson['monthlyRate']) * 100;
+    } else {
+      taxaJurosAnualVal = toDouble(json['taxaJurosAnual'] ?? json['annualInterestRate'] ?? json['interestRate'] ?? json['taxaJuros']);
+      taxaJurosMensalVal = toDouble(json['taxaJurosMensal'] ?? json['monthlyInterestRate']);
+    }
+
+    final parcelaPriceVal = toDouble(priceJson is Map<String, dynamic>
+        ? priceJson['firstPayment']
+        : (json['parcelaPrice'] ?? json['priceInstallment'] ?? json['prestacionPrice'] ?? json['parcela_price']));
+
+    final primeiraParcelaSacVal = toDouble(sacJson is Map<String, dynamic>
+        ? sacJson['firstPayment']
+        : (json['primeiraParcelaSac'] ?? json['sacFirstInstallment'] ?? json['primeiraParcela'] ?? json['primeira_parcela_sac']));
+
+    final ultimaParcelaSacVal = toDouble(sacJson is Map<String, dynamic>
+        ? sacJson['lastPayment']
+        : (json['ultimaParcelaSac'] ?? json['sacLastInstallment'] ?? json['ultimaParcela'] ?? json['ultima_parcela_sac']));
+
+    final totalPagoPriceVal = toDouble(priceJson is Map<String, dynamic>
+        ? priceJson['totalCost']
+        : (json['totalPagoPrice'] ?? json['priceTotalPaid'] ?? json['totalPaidPrice'] ?? json['total_pago_price']));
+
+    final totalPagoSacVal = toDouble(sacJson is Map<String, dynamic>
+        ? sacJson['totalCost']
+        : (json['totalPagoSac'] ?? json['sacTotalPaid'] ?? json['totalPaidSac'] ?? json['total_pago_sac']));
+
+    final totalJurosPriceVal = totalPagoPriceVal > 0
+        ? (totalPagoPriceVal - valorFinanciadoVal)
+        : toDouble(json['totalJurosPrice'] ?? json['priceTotalInterest'] ?? json['totalJurosPrice'] ?? json['total_juros_price']);
+
+    final totalJurosSacVal = totalPagoSacVal > 0
+        ? (totalPagoSacVal - valorFinanciadoVal)
+        : toDouble(json['totalJurosSac'] ?? json['sacTotalInterest'] ?? json['totalJurosSac'] ?? json['total_juros_sac']);
+
+    // Merge warnings/restricoes
+    final Set<String> allRestrictions = {};
+
+    // Root warnings
+    final rawRestrictions = json['restricoes'] ?? json['restrictions'] ?? json['alerts'] ?? json['warnings'];
+    if (rawRestrictions is List) {
+      for (var e in rawRestrictions) {
+        if (e != null) allRestrictions.add(e.toString());
+      }
+    }
+
+    // SAC warnings
+    if (sacJson is Map<String, dynamic>) {
+      final sacWarnings = sacJson['warnings'];
+      if (sacWarnings is List) {
+        for (var e in sacWarnings) {
+          if (e != null) allRestrictions.add(e.toString());
+        }
+      }
+    }
+
+    // PRICE warnings
+    if (priceJson is Map<String, dynamic>) {
+      final priceWarnings = priceJson['warnings'];
+      if (priceWarnings is List) {
+        for (var e in priceWarnings) {
+          if (e != null) allRestrictions.add(e.toString());
+        }
+      }
+    }
+
+    return BankSimulation(
+      nomeInstituicao: nomeInstituicaoVal,
+      logoUrl: logoUrlVal,
+      valorFinanciado: valorFinanciadoVal,
+      prazoMeses: prazoMesesVal,
+      taxaJurosAnual: taxaJurosAnualVal,
+      taxaJurosMensal: taxaJurosMensalVal,
+      parcelaPrice: parcelaPriceVal,
+      primeiraParcelaSac: primeiraParcelaSacVal,
+      ultimaParcelaSac: ultimaParcelaSacVal,
+      totalPagoPrice: totalPagoPriceVal,
+      totalPagoSac: totalPagoSacVal,
+      totalJurosPrice: totalJurosPriceVal,
+      totalJurosSac: totalJurosSacVal,
+      restricoes: allRestrictions.toList(),
     );
+  }
+}
+
+class SimulationRepository {
+  final http.Client? client;
+  final String baseUrl;
+
+  const SimulationRepository({
+    this.client,
+    this.baseUrl = 'http://localhost:3000',
+  });
+
+  Future<List<BankSimulation>> calculateSimulation(SimulationInput input, {String? token}) async {
+    final httpClient = client ?? http.Client();
+    final url = Uri.parse('$baseUrl/api/simulate');
+
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
+    final body = jsonEncode({
+      'propertyValue': input.valorImovel,
+      'downPayment': input.valorEntrada,
+      'monthlyIncome': input.rendaMensal,
+      'age': input.idade,
+      'term': input.prazoMeses,
+    });
+
+    try {
+      final response = await httpClient.post(url, headers: headers, body: body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final dynamic data = jsonDecode(response.body);
+        if (data is List) {
+          return data.map((json) => BankSimulation.fromJson(json as Map<String, dynamic>)).toList();
+        } else {
+          throw Exception('Dados de retorno da simulação inválidos');
+        }
+      } else {
+        throw Exception('Erro na simulação do servidor (Código ${response.statusCode})');
+      }
+    } catch (e) {
+      throw Exception('Erro de conexão com o servidor de simulação');
+    }
   }
 }

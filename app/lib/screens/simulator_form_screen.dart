@@ -7,7 +7,12 @@ import 'simulation_result_screen.dart';
 import '../main.dart'; // For StyleguideScreen navigation
 
 class SimulatorFormScreen extends StatefulWidget {
-  const SimulatorFormScreen({super.key});
+  final SimulationRepository repository;
+
+  const SimulatorFormScreen({
+    super.key,
+    this.repository = const SimulationRepository(),
+  });
 
   @override
   State<SimulatorFormScreen> createState() => _SimulatorFormScreenState();
@@ -32,11 +37,12 @@ class _SimulatorFormScreenState extends State<SimulatorFormScreen> {
   final TextEditingController _dataNascimentoController = TextEditingController();
 
   bool _isLoading = false;
-  final _repository = const SimulationRepository();
+  late final SimulationRepository _repository;
 
   @override
   void initState() {
     super.initState();
+    _repository = widget.repository;
     _valorImovelController = TextEditingController(text: _valorImovel.round().toString());
     _entradaController = TextEditingController(text: _valorEntrada.round().toString());
     _rendaController = TextEditingController(text: _rendaMensal.round().toString());
@@ -138,46 +144,26 @@ class _SimulatorFormScreenState extends State<SimulatorFormScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    final dataNasc = _parseDate(_dataNascimentoController.text)!;
+    final input = SimulationInput(
+      valorImovel: _valorImovel,
+      valorEntrada: _valorEntrada,
+      rendaMensal: _rendaMensal,
+      tipoImovel: _tipoImovel,
+      estadoCivil: _estadoCivil,
+      prazoMeses: _prazoMeses,
+      dataNascimento: dataNasc,
+    );
 
-    try {
-      final dataNasc = _parseDate(_dataNascimentoController.text)!;
-      final input = SimulationInput(
-        valorImovel: _valorImovel,
-        valorEntrada: _valorEntrada,
-        rendaMensal: _rendaMensal,
-        tipoImovel: _tipoImovel,
-        estadoCivil: _estadoCivil,
-        prazoMeses: _prazoMeses,
-        dataNascimento: dataNasc,
+    if (mounted) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => SimulationResultScreen(
+            input: input,
+            repository: _repository,
+          ),
+        ),
       );
-
-      final result = await _repository.calculateSimulation(input);
-
-      if (mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => SimulationResultScreen(result: result),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao calcular simulação. Tente novamente.'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 
