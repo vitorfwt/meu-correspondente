@@ -1,5 +1,10 @@
-Toda alteração de código passa por agente DEV.
-Priorize economia de tokens: realize alterações diretas via Master em tarefas simples.
-Gere relatórios de QA e execuções sintéticos.
-Invoque subagentes apenas para paralelismo ou alta complexidade.
+Prioridades:
+1. Rule Engine
+2. Execution Policy
+3. Capability Routing
+4. Context Loader
+
+Economia de tokens nunca altera a política escolhida.
+
+Desenvolvimento atômico: cada subagente deve atuar em exatamente 1 issue por vez. A homologação, QA e revisão devem ser concluídas para aquela issue antes de iniciar a próxima.
 
