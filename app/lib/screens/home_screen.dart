@@ -332,7 +332,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (copomCard != null) copomCard,
                         Wrap(
                           spacing: 12,
                           runSpacing: 12,
@@ -388,6 +387,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                           }).toList(),
                         ),
+                        if (copomCard != null) ...[
+                          const SizedBox(height: 16),
+                          copomCard,
+                        ],
                       ],
                     );
                   },
