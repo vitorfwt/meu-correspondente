@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app/main.dart';
-import 'package:app/screens/simulator_form_screen.dart';
+import 'package:app/screens/home_screen.dart';
 import 'package:app/screens/main_navigation_screen.dart';
 
 void main() {
@@ -17,9 +17,9 @@ void main() {
     await tester.pumpWidget(MyApp(prefs: prefs));
     await tester.pumpAndSettle();
 
-    // Verify that the MainNavigationScreen and SimulatorFormScreen are rendered.
+    // Verify that the MainNavigationScreen and HomeScreen are rendered.
     expect(find.byType(MainNavigationScreen), findsOneWidget);
-    expect(find.byType(SimulatorFormScreen), findsOneWidget);
-    expect(find.text('Faça uma Simulação'), findsOneWidget);
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(find.text('Olá, João Silva'), findsOneWidget);
   });
 }

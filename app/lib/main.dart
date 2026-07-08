@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth/auth_provider.dart';
+import 'auth/auth_repository.dart';
 import 'screens/login_screen.dart';
 import 'screens/simulator_form_screen.dart';
 import 'screens/main_navigation_screen.dart';
@@ -21,12 +22,16 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   final SharedPreferences prefs;
-  const MyApp({super.key, required this.prefs});
+  final AuthRepository? repository;
+  const MyApp({super.key, required this.prefs, this.repository});
 
   @override
   Widget build(BuildContext context) {
     return AuthProviderScope(
-      notifier: AuthProvider(prefs: prefs),
+      notifier: AuthProvider(
+        prefs: prefs,
+        repository: repository ?? const AuthRepository(),
+      ),
       child: MaterialApp(
         title: 'Meu Correspondente - Design System',
         debugShowCheckedModeBanner: false,

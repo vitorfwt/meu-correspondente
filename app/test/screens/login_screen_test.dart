@@ -212,7 +212,7 @@ void main() {
     testWidgets('Full flow: Login -> Dashboard -> Logout', (WidgetTester tester) async {
       final mockRepo = MockAuthRepository();
 
-      await tester.pumpWidget(MyApp(prefs: prefs));
+      await tester.pumpWidget(MyApp(prefs: prefs, repository: mockRepo));
       await tester.pumpAndSettle();
 
       expect(find.text('Meu Correspondente'), findsOneWidget);
@@ -222,8 +222,8 @@ void main() {
       await tester.tap(find.byKey(const Key('google_login_button')));
       await tester.pumpAndSettle();
 
-      // Should now be on MainNavigationScreen showing SimulatorFormScreen
-      expect(find.text('Faça uma Simulação'), findsOneWidget);
+      // Should now be on MainNavigationScreen showing HomeScreen
+      expect(find.text('Olá, João Silva'), findsOneWidget);
 
       // Tap Profile tab in the bottom navigation bar
       await tester.tap(find.byIcon(Icons.person_outline));

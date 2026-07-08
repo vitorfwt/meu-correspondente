@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../auth/auth_provider.dart';
 import '../design_system/colors.dart';
 import '../components/buttons/primary_button.dart';
@@ -526,7 +527,8 @@ class _SimulatorFormScreenState extends State<SimulatorFormScreen> {
                   TextFormField(
                     key: const Key('data_nascimento_field'),
                     controller: _dataNascimentoController,
-                    keyboardType: TextInputType.datetime,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [DateInputFormatter()],
                     decoration: InputDecoration(
                       hintText: 'DD/MM/AAAA',
                       suffixIcon: IconButton(
@@ -745,6 +747,31 @@ class _SimulatorFormScreenState extends State<SimulatorFormScreen> {
           },
         ),
       ),
+    );
+  }
+}
+
+/// Formata automaticamente datas no formato DD/MM/AAAA ao digitar.
+class DateInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text.replaceAll('/', '');
+    if (newValue.text.length < oldValue.text.length) {
+      // Deletando — deixa o Flutter lidar normalmente
+      return newValue;
+    }
+    final buffer = StringBuffer();
+    for (int i = 0; i < text.length && i < 8; i++) {
+      buffer.write(text[i]);
+      if (i == 1 || i == 3) buffer.write('/');
+    }
+    final formatted = buffer.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }

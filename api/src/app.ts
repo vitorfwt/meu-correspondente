@@ -6,7 +6,8 @@ import profileRouter from './routes/profile.routes.ts';
 import partnerRouter from './routes/partner.routes.ts';
 import indicatorRouter from './routes/indicator.routes.ts';
 import simulationsRouter from './routes/simulations.routes.ts';
-import { authMiddleware, AuthenticatedRequest } from './middlewares/auth.middleware.ts';
+import adminRouter from './routes/admin.routes.ts';
+import { authMiddleware, adminMiddleware, AuthenticatedRequest } from './middlewares/auth.middleware.ts';
 import { prisma } from './db.ts';
 
 const app = express();
@@ -29,6 +30,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Servir arquivos estáticos da pasta public (como logos dos bancos)
 app.use('/public', express.static('public'));
 
+// Servir o painel administrativo estático
+app.use('/admin', express.static('../admin'));
+
 // Registro das rotas públicas de autenticação
 app.use('/api/auth', authRouter);
 
@@ -40,6 +44,8 @@ app.use('/api/profile', profileRouter);
 app.use('/api/partners', partnerRouter);
 app.use('/api/indicators', indicatorRouter);
 app.use('/api/simulations', simulationsRouter);
+app.use('/api/admin', authMiddleware, adminMiddleware, adminRouter);
+
 
 // Rota protegida de teste para validar o middleware
 app.get('/api/protected-route', authMiddleware, (req: AuthenticatedRequest, res: Response) => {

@@ -7,14 +7,15 @@ generator client {
 }
 
 model User {
-  id          String              @id @default(uuid())
-  name        String
-  email       String              @unique
-  role        String              // "client" | "broker"
-  creci       String?
-  creciState  String?
-  createdAt   DateTime            @default(now())
-  simulations SimulationHistory[]
+  id           String              @id @default(uuid())
+  name         String
+  email        String              @unique
+  role         String              // "client" | "broker" | "admin"
+  passwordHash String?             // Opcional, armazenará a senha com hash (bcrypt) para admins/parceiros locais
+  creci        String?
+  creciState   String?
+  createdAt    DateTime            @default(now())
+  simulations  SimulationHistory[]
 
   @@map("users")
 }

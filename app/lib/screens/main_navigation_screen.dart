@@ -18,7 +18,7 @@ class MainNavigationScreen extends StatefulWidget {
 
   const MainNavigationScreen({
     super.key,
-    this.initialIndex = 1,
+    this.initialIndex = 0,
     this.indicatorRepository = const IndicatorRepository(),
     this.partnerRepository = const PartnerRepository(),
   });

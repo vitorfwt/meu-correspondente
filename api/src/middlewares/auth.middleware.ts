@@ -33,3 +33,16 @@ export function authMiddleware(
     res.status(401).json({ error: 'Invalid or expired token' });
   }
 }
+
+export function adminMiddleware(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): void {
+  if (!req.user || req.user.role !== 'admin') {
+    res.status(403).json({ error: 'Acesso negado. Apenas administradores permitidos.' });
+    return;
+  }
+  next();
+}
+

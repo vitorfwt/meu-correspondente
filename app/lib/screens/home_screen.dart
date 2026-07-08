@@ -9,10 +9,12 @@ import '../simulation/indicator_repository.dart';
 class HomeScreen extends StatefulWidget {
   final VoidCallback onNavigateToSimulations;
   final IndicatorRepository repository;
+  final int initialIndex;
 
   const HomeScreen({
     super.key,
     required this.onNavigateToSimulations,
+    this.initialIndex = 0,
     this.repository = const IndicatorRepository(),
   });
 
@@ -268,63 +270,60 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
 
                     final list = snapshot.data!;
-                    return SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      child: Row(
-                        children: list.map((ind) {
-                          return Container(
-                            key: Key('indicator_card_${ind.name}'),
-                            width: 140,
-                            margin: const EdgeInsets.only(right: 12),
-                            child: AppCard(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          _getDisplayName(ind.name),
-                                          style: AppTypography.legend.copyWith(
-                                            color: AppColors.secondary,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
+                    return Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: list.map((ind) {
+                        return SizedBox(
+                          key: Key('indicator_card_${ind.name}'),
+                          width: (MediaQuery.of(context).size.width - 48 - 12) / 2,
+                          child: AppCard(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        _getDisplayName(ind.name),
+                                        style: AppTypography.legend.copyWith(
+                                          color: AppColors.secondary,
+                                          fontWeight: FontWeight.bold,
                                         ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      Icon(
-                                        _getIconForIndicator(ind.name),
-                                        color: AppColors.accent,
-                                        size: 20,
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    _formatValue(ind.value),
-                                    style: AppTypography.sectionTitle.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20,
                                     ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Atu. ${_formatDate(ind.updatedAt)}',
-                                    style: AppTypography.helperText.copyWith(
-                                      color: AppColors.secondary.withOpacity(0.5),
-                                      fontSize: 10,
+                                    Icon(
+                                      _getIconForIndicator(ind.name),
+                                      color: AppColors.accent,
+                                      size: 20,
                                     ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  _formatValue(ind.value),
+                                  style: AppTypography.sectionTitle.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
                                   ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Atu. ${_formatDate(ind.updatedAt)}',
+                                  style: AppTypography.helperText.copyWith(
+                                    color: AppColors.secondary.withOpacity(0.5),
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
                             ),
-                          );
-                        }).toList(),
-                      ),
+                          ),
+                        );
+                      }).toList(),
                     );
                   },
                 ),
@@ -337,34 +336,38 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildLoadingIndicators() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const NeverScrollableScrollPhysics(),
-      child: Row(
-        children: List.generate(4, (index) {
-          return Container(
-            width: 140,
-            height: 120,
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppRadius.radiusCards),
-              border: Border.all(color: AppColors.lightGrey, width: 1),
-            ),
-            child: const Center(
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardWidth = (constraints.maxWidth - 12) / 2;
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: List.generate(4, (index) {
+            return SizedBox(
+              width: cardWidth,
+              height: 100,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppRadius.radiusCards),
+                  border: Border.all(color: AppColors.lightGrey, width: 1),
+                ),
+                child: const Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          );
-        }),
-      ),
+            );
+          }),
+        );
+      },
     );
   }
 

@@ -1,4 +1,5 @@
 import { prisma } from '../src/db.ts';
+import bcrypt from 'bcryptjs';
 
 async function main() {
   console.log('Seeding database...');
@@ -11,7 +12,18 @@ async function main() {
   await prisma.macroeconomicIndicator.deleteMany({});
   await prisma.user.deleteMany({});
 
-  // 1. Create a dummy user
+  // 1. Create an admin user and a dummy user
+  const adminPasswordHash = await bcrypt.hash('admin123', 10);
+  const admin = await prisma.user.create({
+    data: {
+      name: 'Admin Meu Correspondente',
+      email: 'admin@meucorrespondente.com',
+      role: 'admin',
+      passwordHash: adminPasswordHash,
+    },
+  });
+  console.log(`Admin created: ${admin.name} (${admin.email})`);
+
   const user = await prisma.user.create({
     data: {
       name: 'João Silva',

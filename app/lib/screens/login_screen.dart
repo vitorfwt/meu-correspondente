@@ -34,7 +34,7 @@ class LoginScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 64.0, // account for padding
+                  minHeight: (constraints.maxHeight - 64.0).clamp(0.0, double.infinity), // account for padding
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

@@ -47,10 +47,8 @@ class IndicatorRepository {
     if (_baseUrl != null && _baseUrl!.isNotEmpty) {
       return _baseUrl!;
     }
-    if (!kIsWeb && Platform.isAndroid) {
-      return 'http://10.0.2.2:3000';
-    }
-    return 'http://localhost:3000';
+    // IP xumbado para teste no Mi 9 Lite via Wi-Fi
+    return 'http://192.168.0.70:3000';
   }
 
   Future<List<MacroeconomicIndicator>> getIndicators({required String token}) async {

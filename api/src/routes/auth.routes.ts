@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { prisma } from '../db.ts';
 import { generateToken } from '../utils/jwt.ts';
 import { OAuth2Client } from 'google-auth-library';
+import bcrypt from 'bcryptjs';
 
 const router = Router();
 const googleClient = new OAuth2Client();
@@ -107,6 +108,52 @@ router.post('/social-login', async (req: Request, res: Response): Promise<void> 
     });
   } catch (error) {
     res.status(401).json({ error: (error as Error).message });
+  }
+});
+
+// POST /api/auth/admin-login
+router.post('/admin-login', async (req: Request, res: Response): Promise<void> => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    res.status(400).json({ error: 'Email and password are required' });
+    return;
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user || user.role !== 'admin' || !user.passwordHash) {
+      res.status(401).json({ error: 'Invalid credentials or user is not an administrator' });
+      return;
+    }
+
+    const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+
+    if (!passwordMatch) {
+      res.status(401).json({ error: 'Invalid credentials or user is not an administrator' });
+      return;
+    }
+
+    const token = generateToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    res.status(200).json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message });
   }
 });
 

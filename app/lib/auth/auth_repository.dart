@@ -72,34 +72,60 @@ class AuthRepository {
     if (_baseUrl != null && _baseUrl!.isNotEmpty) {
       return _baseUrl!;
     }
-    if (!kIsWeb && Platform.isAndroid) {
-      return 'http://10.0.2.2:3000';
-    }
-    return 'http://localhost:3000';
+    // IP xumbado para teste no Mi 9 Lite via Wi-Fi (192.168.0.70)
+    return 'http://192.168.0.70:3000';
   }
 
   Future<(User, String)> loginWithGoogle() async {
-    await Future.delayed(const Duration(seconds: 1));
-    final user = User(
-      id: 'google_123',
-      name: 'João Silva',
-      email: 'joao.silva@example.com',
-      role: 'client',
-    );
-    const token = 'fake_jwt_token_google_12345';
-    return (user, token);
+    final url = Uri.parse('$baseUrl/api/auth/social-login');
+    try {
+      final response = await (client ?? http.Client()).post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'provider': 'google',
+          'idToken': 'mock-joao-silva',
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        final user = User.fromJson(data['user'] as Map<String, dynamic>);
+        final token = data['token'] as String;
+        return (user, token);
+      } else {
+        throw Exception('Erro ao realizar login no servidor (Código ${response.statusCode})');
+      }
+    } catch (e) {
+      debugPrint('loginWithGoogle error: $e');
+      rethrow;
+    }
   }
 
   Future<(User, String)> loginWithApple() async {
-    await Future.delayed(const Duration(seconds: 1));
-    final user = User(
-      id: 'apple_123',
-      name: 'João Silva',
-      email: 'joao.silva@example.com',
-      role: 'broker',
-    );
-    const token = 'fake_jwt_token_apple_12345';
-    return (user, token);
+    final url = Uri.parse('$baseUrl/api/auth/social-login');
+    try {
+      final response = await (client ?? http.Client()).post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'provider': 'apple',
+          'idToken': 'mock-joao-corretor',
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        final user = User.fromJson(data['user'] as Map<String, dynamic>);
+        final token = data['token'] as String;
+        return (user, token);
+      } else {
+        throw Exception('Erro ao realizar login no servidor (Código ${response.statusCode})');
+      }
+    } catch (e) {
+      debugPrint('loginWithApple error: $e');
+      rethrow;
+    }
   }
 
   Future<User> updateProfile(String token, String creci, String uf) async {
