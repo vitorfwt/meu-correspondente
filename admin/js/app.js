@@ -313,7 +313,7 @@ async function loadBanks() {
 
       row.innerHTML = `
         <td class="px-6 py-4 flex items-center">${logoContent}</td>
-        <td class="px-6 py-4 font-semibold text-slate-200">${escapeHtml(bank.name)}</td>
+        <td class="px-6 py-4 font-semibold text-brandPrimary">${escapeHtml(bank.name)}</td>
         <td class="px-6 py-4 text-center">
           <label class="switch inline-block">
             <input type="checkbox" id="toggle-${bank.id}" ${isChecked}>
