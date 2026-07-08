@@ -19,7 +19,7 @@ router.get('/institutions', async (req: Request, res: Response): Promise<void> =
 
 // POST /api/admin/institutions
 router.post('/institutions', async (req: Request, res: Response): Promise<void> => {
-  const { name, logoUrl, isActive } = req.body;
+  const { name, logoUrl, isActive, validateLTV, validateTerm, validateAge } = req.body;
 
   if (!name) {
     res.status(400).json({ error: 'Name is required' });
@@ -32,6 +32,9 @@ router.post('/institutions', async (req: Request, res: Response): Promise<void> 
         name,
         logoUrl,
         isActive: isActive !== undefined ? isActive : true,
+        validateLTV: validateLTV !== undefined ? validateLTV : true,
+        validateTerm: validateTerm !== undefined ? validateTerm : true,
+        validateAge: validateAge !== undefined ? validateAge : true,
       },
     });
     res.status(201).json(institution);
@@ -43,7 +46,7 @@ router.post('/institutions', async (req: Request, res: Response): Promise<void> 
 // PUT /api/admin/institutions/:id
 router.put('/institutions/:id', async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { name, logoUrl, isActive } = req.body;
+  const { name, logoUrl, isActive, validateLTV, validateTerm, validateAge } = req.body;
 
   try {
     const existing = await prisma.financialInstitution.findUnique({
@@ -61,6 +64,9 @@ router.put('/institutions/:id', async (req: Request, res: Response): Promise<voi
         name: name !== undefined ? name : existing.name,
         logoUrl: logoUrl !== undefined ? logoUrl : existing.logoUrl,
         isActive: isActive !== undefined ? isActive : existing.isActive,
+        validateLTV: validateLTV !== undefined ? validateLTV : existing.validateLTV,
+        validateTerm: validateTerm !== undefined ? validateTerm : existing.validateTerm,
+        validateAge: validateAge !== undefined ? validateAge : existing.validateAge,
       },
     });
 
@@ -244,6 +250,53 @@ router.delete('/interest-rates/:id', async (req: Request, res: Response): Promis
     });
 
     res.sendStatus(204);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message });
+  }
+});
+
+// ── Macroeconomic Indicators CRUD ───────────────────────────────────────────
+
+// GET /api/admin/indicators
+router.get('/indicators', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const indicators = await prisma.macroeconomicIndicator.findMany({
+      orderBy: { name: 'asc' },
+    });
+    res.status(200).json(indicators);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message });
+  }
+});
+
+// PUT /api/admin/indicators/:id
+router.put('/indicators/:id', async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { value } = req.body;
+
+  if (value === undefined) {
+    res.status(400).json({ error: 'Value is required' });
+    return;
+  }
+
+  try {
+    const existing = await prisma.macroeconomicIndicator.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      res.status(404).json({ error: 'Macroeconomic indicator not found' });
+      return;
+    }
+
+    const updated = await prisma.macroeconomicIndicator.update({
+      where: { id },
+      data: {
+        value: Number(value),
+      },
+    });
+
+    res.status(200).json(updated);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }

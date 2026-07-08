@@ -25,6 +25,9 @@ model FinancialInstitution {
   name          String
   logoUrl       String?
   isActive      Boolean             @default(true)
+  validateLTV   Boolean             @default(true)
+  validateTerm  Boolean             @default(true)
+  validateAge   Boolean             @default(true)
   interestRates InterestRate[]
   simulations   SimulationHistory[]
 

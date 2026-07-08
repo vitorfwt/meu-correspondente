@@ -83,6 +83,16 @@
           </svg>
           <span>Taxas de Simulação</span>
         </button>
+
+        <button 
+          id="btnTabIndicators" 
+          class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-brandIceBlue/60 hover:bg-brandSecondary/40 hover:text-white"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Indicadores Macroeconômicos</span>
+        </button>
       </nav>
     </div>
 
@@ -243,6 +253,71 @@
         </div>
       </section>
 
+      <!-- ================= ABA INDICADORES ================= -->
+      <section id="tabIndicators" class="space-y-6 hidden">
+        <!-- Actions row -->
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-brandPrimary">Indicadores Macroeconômicos Atuais</h3>
+        </div>
+
+        <!-- Statistics Card -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white border border-brandIceBlue rounded-2xl p-6 shadow-sm flex items-center space-x-4">
+            <div class="p-3 bg-brandSecondary/10 rounded-xl text-brandSecondary">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total de Indicadores</p>
+              <h4 class="text-2xl font-bold text-brandPrimary mt-1" id="totalIndicatorsCount">0</h4>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="bg-white border border-brandIceBlue rounded-2xl overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-brandIceBlue bg-[#f0f4f8] text-brandSecondary text-xs font-semibold uppercase tracking-wider">
+                  <th class="px-6 py-4">Nome do Indicador</th>
+                  <th class="px-6 py-4">Valor Formatado</th>
+                  <th class="px-6 py-4">Última Atualização</th>
+                  <th class="px-6 py-4 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="indicatorsTableBody" class="divide-y divide-brandIceBlue text-sm">
+                <!-- Loader Placeholder -->
+                <tr id="indicatorsLoader">
+                  <td colspan="4" class="px-6 py-12 text-center text-slate-500">
+                    <div class="flex flex-col items-center justify-center space-y-3">
+                      <svg class="animate-spin h-8 w-8 text-brandAccent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>Carregando indicadores macroeconômicos...</span>
+                    </div>
+                  </td>
+                </tr>
+                <!-- Empty State -->
+                <tr id="indicatorsEmptyState" class="hidden">
+                  <td colspan="4" class="px-6 py-12 text-center text-slate-500">
+                    <div class="flex flex-col items-center justify-center space-y-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span class="font-medium text-slate-600">Nenhum indicador macroeconômico encontrado</span>
+                    </div>
+                  </td>
+                </tr>
+                <!-- Dynamic Rows inserted here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -286,6 +361,35 @@
             class="w-full bg-white border border-brandIceBlue rounded-xl px-4 py-2.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brandAccent/80 focus:border-transparent transition-all duration-200"
           >
           <span id="bankLogoError" class="text-xs text-red-500 mt-1 hidden">Insira uma URL válida (opcional).</span>
+        </div>
+
+        <!-- Críticas de Simulação Switches -->
+        <div class="space-y-4 pt-2">
+          <label class="block text-xs font-semibold text-brandSecondary uppercase tracking-wider">Configurações de Validação</label>
+          
+          <div class="flex items-center justify-between p-3 bg-slate-50 border border-brandIceBlue rounded-xl">
+            <span class="text-sm font-medium text-slate-700">Criticar limite de LTV</span>
+            <label class="switch">
+              <input type="checkbox" id="bankValidateLTV" name="validateLTV">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between p-3 bg-slate-50 border border-brandIceBlue rounded-xl">
+            <span class="text-sm font-medium text-slate-700">Criticar limites de prazo</span>
+            <label class="switch">
+              <input type="checkbox" id="bankValidateTerm" name="validateTerm">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between p-3 bg-slate-50 border border-brandIceBlue rounded-xl">
+            <span class="text-sm font-medium text-slate-700">Criticar limite de idade</span>
+            <label class="switch">
+              <input type="checkbox" id="bankValidateAge" name="validateAge">
+              <span class="slider"></span>
+            </label>
+          </div>
         </div>
 
         <!-- Action Buttons -->
@@ -456,6 +560,71 @@
           >
             <span id="btnSaveRateText">Salvar Taxa</span>
             <svg id="btnSaveRateSpinner" class="hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL INDICADOR ================= -->
+  <div id="indicatorModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brandPrimary/85 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white border border-brandIceBlue rounded-2xl w-full max-w-md overflow-hidden shadow-2xl scale-95 transition-transform duration-300">
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-brandIceBlue bg-slate-50 flex items-center justify-between">
+        <h3 id="indicatorModalTitle" class="font-bold text-lg text-brandPrimary">Editar Indicador</h3>
+        <button id="btnCloseIndicatorModal" class="text-slate-400 hover:text-slate-600 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body (Form) -->
+      <form id="indicatorForm" class="p-6 space-y-5" novalidate>
+        <input type="hidden" id="indicatorId" name="id">
+        
+        <div>
+          <label class="block text-xs font-semibold text-brandSecondary uppercase tracking-wider mb-2">Indicador</label>
+          <input 
+            type="text" 
+            id="indicatorName" 
+            readonly 
+            class="w-full bg-slate-100 border border-brandIceBlue rounded-xl px-4 py-2.5 text-slate-500 cursor-not-allowed focus:outline-none transition-all duration-200"
+          >
+        </div>
+
+        <div>
+          <label id="indicatorValueLabel" for="indicatorValue" class="block text-xs font-semibold text-brandSecondary uppercase tracking-wider mb-2">Valor *</label>
+          <div id="indicatorValueContainer">
+            <input 
+              id="indicatorValue" 
+              name="value" 
+              required 
+              class="w-full bg-white border border-brandIceBlue rounded-xl px-4 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brandAccent/80 focus:border-transparent transition-all duration-200"
+            >
+          </div>
+          <span id="indicatorValueError" class="text-xs text-red-500 mt-1 hidden">O valor é obrigatório.</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-end space-x-3 pt-2">
+          <button 
+            type="button" 
+            id="btnCancelIndicator"
+            class="bg-slate-100 border border-brandIceBlue hover:border-slate-300 text-brandSecondary font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
+          >
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            id="btnSaveIndicator"
+            class="bg-gradient-to-r from-brandSecondary to-brandAccent hover:from-[#163e56] hover:to-[#26a89c] text-white font-semibold rounded-xl px-5 py-2.5 shadow-lg shadow-brandAccent/10 hover:shadow-brandAccent/20 transition-all duration-200 flex items-center space-x-2 text-sm"
+          >
+            <span id="btnSaveIndicatorText">Salvar Indicador</span>
+            <svg id="btnSaveIndicatorSpinner" class="hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>

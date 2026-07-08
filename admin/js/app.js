@@ -1,16 +1,19 @@
 // Lógica do Painel Administrativo - Meu Correspondente
 
 // Estado Global
-let activeTab = 'banks'; // 'banks' | 'rates'
+let activeTab = 'banks'; // 'banks' | 'rates' | 'indicators'
 let allBanks = []; // Armazena a lista de bancos na memória
 let allRates = []; // Armazena a lista de taxas na memória
+let allIndicators = []; // Armazena a lista de indicadores na memória
 let deleteCallback = null; // Armazena o callback para a exclusão ativa
 
 // Elementos da DOM
 const btnTabBanks = document.getElementById('btnTabBanks');
 const btnTabRates = document.getElementById('btnTabRates');
+const btnTabIndicators = document.getElementById('btnTabIndicators');
 const tabBanksSection = document.getElementById('tabBanks');
 const tabRatesSection = document.getElementById('tabRates');
+const tabIndicatorsSection = document.getElementById('tabIndicators');
 
 const pageTitle = document.getElementById('pageTitle');
 const pageSubtitle = document.getElementById('pageSubtitle');
@@ -30,9 +33,14 @@ const ratesLoader = document.getElementById('ratesLoader');
 const ratesEmptyState = document.getElementById('ratesEmptyState');
 const ratesTableBody = document.getElementById('ratesTableBody');
 
+const indicatorsLoader = document.getElementById('indicatorsLoader');
+const indicatorsEmptyState = document.getElementById('indicatorsEmptyState');
+const indicatorsTableBody = document.getElementById('indicatorsTableBody');
+
 // Modais
 const bankModal = document.getElementById('bankModal');
 const rateModal = document.getElementById('rateModal');
+const indicatorModal = document.getElementById('indicatorModal');
 const deleteModal = document.getElementById('deleteModal');
 
 // Form de Bancos
@@ -40,6 +48,9 @@ const bankForm = document.getElementById('bankForm');
 const bankIdInput = document.getElementById('bankId');
 const bankNameInput = document.getElementById('bankName');
 const bankLogoUrlInput = document.getElementById('bankLogoUrl');
+const bankValidateLTVInput = document.getElementById('bankValidateLTV');
+const bankValidateTermInput = document.getElementById('bankValidateTerm');
+const bankValidateAgeInput = document.getElementById('bankValidateAge');
 const btnSaveBankSpinner = document.getElementById('btnSaveBankSpinner');
 const btnSaveBankText = document.getElementById('btnSaveBankText');
 
@@ -55,6 +66,15 @@ const rateMinTermInput = document.getElementById('rateMinTerm');
 const rateMaxTermInput = document.getElementById('rateMaxTerm');
 const btnSaveRateSpinner = document.getElementById('btnSaveRateSpinner');
 const btnSaveRateText = document.getElementById('btnSaveRateText');
+
+// Form de Indicadores
+const indicatorForm = document.getElementById('indicatorForm');
+const indicatorIdInput = document.getElementById('indicatorId');
+const indicatorNameInput = document.getElementById('indicatorName');
+const indicatorValueContainer = document.getElementById('indicatorValueContainer');
+const indicatorValueLabel = document.getElementById('indicatorValueLabel');
+const btnSaveIndicatorSpinner = document.getElementById('btnSaveIndicatorSpinner');
+const btnSaveIndicatorText = document.getElementById('btnSaveIndicatorText');
 
 // Confirmação Exclusão
 const btnConfirmDelete = document.getElementById('btnConfirmDelete');
@@ -114,6 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Bind das abas
   btnTabBanks.addEventListener('click', () => switchTab('banks'));
   btnTabRates.addEventListener('click', () => switchTab('rates'));
+  btnTabIndicators.addEventListener('click', () => switchTab('indicators'));
 
   // Bind de Modais (Abertura/Fechamento)
   document.getElementById('btnOpenAddBankModal').addEventListener('click', () => openBankModal());
@@ -124,11 +145,15 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnCloseRateModal').addEventListener('click', () => closeRateModal());
   document.getElementById('btnCancelRate').addEventListener('click', () => closeRateModal());
 
+  document.getElementById('btnCloseIndicatorModal').addEventListener('click', () => closeIndicatorModal());
+  document.getElementById('btnCancelIndicator').addEventListener('click', () => closeIndicatorModal());
+
   document.getElementById('btnCancelDelete').addEventListener('click', () => closeDeleteModal());
 
   // Bind de Submits
   bankForm.addEventListener('submit', saveBank);
   rateForm.addEventListener('submit', saveRate);
+  indicatorForm.addEventListener('submit', saveIndicator);
 
   // Inicializa a primeira aba
   switchTab('banks');
@@ -136,41 +161,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /**
  * Altera a aba de navegação ativa
- * @param {string} tab 'banks' | 'rates'
+ * @param {string} tab 'banks' | 'rates' | 'indicators'
  */
 function switchTab(tab) {
   activeTab = tab;
   
-  if (tab === 'banks') {
-    // Atualizar navegação sidebar
-    btnTabBanks.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 bg-brandSecondary text-brandAccent shadow-sm";
-    btnTabRates.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-brandIceBlue/60 hover:bg-brandSecondary/40 hover:text-white";
-    
-    // Alternar visibilidade
-    tabBanksSection.classList.remove('hidden');
-    tabRatesSection.classList.add('hidden');
+  // Reset classes for all tab buttons
+  btnTabBanks.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-brandIceBlue/60 hover:bg-brandSecondary/40 hover:text-white";
+  btnTabRates.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-brandIceBlue/60 hover:bg-brandSecondary/40 hover:text-white";
+  btnTabIndicators.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-brandIceBlue/60 hover:bg-brandSecondary/40 hover:text-white";
+  
+  // Hide all sections
+  tabBanksSection.classList.add('hidden');
+  tabRatesSection.classList.add('hidden');
+  tabIndicatorsSection.classList.add('hidden');
 
-    // Header
+  if (tab === 'banks') {
+    btnTabBanks.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 bg-brandSecondary text-brandAccent shadow-sm";
+    tabBanksSection.classList.remove('hidden');
+
     pageTitle.textContent = "Instituições Financeiras";
     pageSubtitle.textContent = "Gerencie as instituições ativas do sistema";
     headerStatsLabel.textContent = "Total de Bancos:";
 
     loadBanks();
-  } else {
-    // Atualizar navegação sidebar
+  } else if (tab === 'rates') {
     btnTabRates.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 bg-brandSecondary text-brandAccent shadow-sm";
-    btnTabBanks.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-brandIceBlue/60 hover:bg-brandSecondary/40 hover:text-white";
-    
-    // Alternar visibilidade
     tabRatesSection.classList.remove('hidden');
-    tabBanksSection.classList.add('hidden');
 
-    // Header
     pageTitle.textContent = "Taxas de Simulação";
     pageSubtitle.textContent = "Configure as regras e taxas de juros por instituição";
     headerStatsLabel.textContent = "Total de Regras:";
 
     loadRates();
+  } else if (tab === 'indicators') {
+    btnTabIndicators.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 bg-brandSecondary text-brandAccent shadow-sm";
+    tabIndicatorsSection.classList.remove('hidden');
+
+    pageTitle.textContent = "Indicadores Macroeconômicos";
+    pageSubtitle.textContent = "Gerencie as taxas e datas oficiais dos indicadores de mercado";
+    headerStatsLabel.textContent = "Total de Indicadores:";
+
+    loadIndicators();
   }
 }
 
@@ -387,7 +419,10 @@ async function toggleBankStatus(id, isActive) {
       body: JSON.stringify({
         name: bank.name,
         logoUrl: bank.logoUrl,
-        isActive
+        isActive,
+        validateLTV: bank.validateLTV !== undefined ? bank.validateLTV : true,
+        validateTerm: bank.validateTerm !== undefined ? bank.validateTerm : true,
+        validateAge: bank.validateAge !== undefined ? bank.validateAge : true
       })
     });
 
@@ -419,10 +454,16 @@ function openBankModal(bank = null) {
     bankIdInput.value = bank.id;
     bankNameInput.value = bank.name;
     bankLogoUrlInput.value = bank.logoUrl || '';
+    bankValidateLTVInput.checked = !!bank.validateLTV;
+    bankValidateTermInput.checked = !!bank.validateTerm;
+    bankValidateAgeInput.checked = !!bank.validateAge;
   } else {
     document.getElementById('bankModalTitle').textContent = 'Novo Banco';
     bankIdInput.value = '';
     bankForm.reset();
+    bankValidateLTVInput.checked = true;
+    bankValidateTermInput.checked = true;
+    bankValidateAgeInput.checked = true;
   }
 
   openModal(bankModal);
@@ -469,7 +510,10 @@ async function saveBank(e) {
 
   const bodyData = {
     name: nameVal,
-    logoUrl: logoUrlVal || null
+    logoUrl: logoUrlVal || null,
+    validateLTV: bankValidateLTVInput.checked,
+    validateTerm: bankValidateTermInput.checked,
+    validateAge: bankValidateAgeInput.checked
   };
 
   try {
@@ -799,6 +843,234 @@ async function deleteRate(id) {
     }
   } catch (error) {
     showToast('Erro de rede ao deletar taxa.', 'error');
+  }
+}
+
+// ================= CRUD: INDICADORES MACROECONÔMICOS =================
+
+/**
+ * Carrega a lista de indicadores do backend
+ */
+async function loadIndicators() {
+  indicatorsLoader.classList.remove('hidden');
+  indicatorsEmptyState.classList.add('hidden');
+  
+  // Limpar linhas dinâmicas anteriores
+  const rows = indicatorsTableBody.querySelectorAll('tr:not(#indicatorsLoader):not(#indicatorsEmptyState)');
+  rows.forEach(r => r.remove());
+
+  try {
+    const res = await fetchWithAuth('/api/admin/indicators');
+    if (!res) return;
+
+    allIndicators = await res.json();
+    totalIndicatorsCount.textContent = allIndicators.length;
+    
+    // Atualiza também o contador estatístico geral no header se a aba ativa for indicators
+    if (activeTab === 'indicators') {
+      headerStatsValue.textContent = allIndicators.length;
+    }
+
+    indicatorsLoader.classList.add('hidden');
+
+    if (allIndicators.length === 0) {
+      indicatorsEmptyState.classList.remove('hidden');
+      return;
+    }
+
+    renderIndicators();
+  } catch (error) {
+    indicatorsLoader.classList.add('hidden');
+    showToast('Erro ao carregar indicadores macroeconômicos.', 'error');
+  }
+}
+
+/**
+ * Renderiza os indicadores carregados na tabela
+ */
+function renderIndicators() {
+  allIndicators.forEach(indicator => {
+    const row = document.createElement('tr');
+    row.className = "border-b border-brandIceBlue hover:bg-[#f0f4f8]/50 transition-colors text-slate-700";
+    
+    // Valor Formatado
+    let formattedValue = '';
+    if (indicator.name === 'COPOM') {
+      // COPOM é uma data (timestamp em milissegundos)
+      const date = new Date(indicator.value);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      formattedValue = `${day}/${month}/${year}`;
+    } else {
+      // Taxas são porcentagens (ex: 0.105 vira 10.5%)
+      const percentVal = (indicator.value * 100).toFixed(4);
+      // Remove zeros extras no final e formata com vírgula decimal
+      const cleanPercentVal = parseFloat(percentVal).toString().replace('.', ',');
+      formattedValue = `${cleanPercentVal}%`;
+    }
+
+    // Data de Última Atualização
+    const updateDate = new Date(indicator.updatedAt);
+    const upDay = String(updateDate.getDate()).padStart(2, '0');
+    const upMonth = String(updateDate.getMonth() + 1).padStart(2, '0');
+    const upYear = updateDate.getFullYear();
+    const upHours = String(updateDate.getHours()).padStart(2, '0');
+    const upMinutes = String(updateDate.getMinutes()).padStart(2, '0');
+    const formattedUpdatedAt = `${upDay}/${upMonth}/${upYear} ${upHours}:${upMinutes}`;
+
+    row.innerHTML = `
+      <td class="px-6 py-4 font-bold text-brandPrimary shrink-0">${escapeHtml(indicator.name)}</td>
+      <td class="px-6 py-4 font-semibold text-slate-700">${formattedValue}</td>
+      <td class="px-6 py-4 text-slate-500 text-xs">${formattedUpdatedAt}</td>
+      <td class="px-6 py-4 text-right">
+        <div class="flex items-center justify-end">
+          <button 
+            id="edit-indicator-${indicator.id}"
+            class="text-brandSecondary hover:text-brandSecondary/80 bg-brandSecondary/10 hover:bg-brandSecondary/20 border border-brandSecondary/20 hover:border-brandSecondary/30 p-2 rounded-xl transition-all duration-200"
+            title="Editar Indicador"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+          </button>
+        </div>
+      </td>
+    `;
+
+    indicatorsTableBody.appendChild(row);
+
+    // Event listener for Edit button
+    row.querySelector(`#edit-indicator-${indicator.id}`).addEventListener('click', () => {
+      openIndicatorModal(indicator);
+    });
+  });
+}
+
+/**
+ * Abre o modal de edição de um indicador
+ * @param {object} indicator 
+ */
+function openIndicatorModal(indicator) {
+  document.getElementById('indicatorValueError').classList.add('hidden');
+  btnSaveIndicatorSpinner.classList.add('hidden');
+  btnSaveIndicatorText.textContent = 'Salvar Indicador';
+  indicatorForm.removeAttribute('disabled');
+
+  indicatorIdInput.value = indicator.id;
+  indicatorNameInput.value = indicator.name;
+
+  if (indicator.name === 'COPOM') {
+    indicatorValueLabel.textContent = 'Próxima Reunião COPOM *';
+    
+    // Converter o timestamp existente para o formato YYYY-MM-DD aceito pelo input type="date"
+    const dateObj = new Date(indicator.value);
+    const yyyy = dateObj.getFullYear();
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const dd = String(dateObj.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+
+    indicatorValueContainer.innerHTML = `
+      <input 
+        type="date" 
+        id="indicatorValue" 
+        name="value" 
+        value="${dateStr}"
+        required 
+        class="w-full bg-white border border-brandIceBlue rounded-xl px-4 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brandAccent/80 focus:border-transparent transition-all duration-200"
+      >
+    `;
+  } else {
+    indicatorValueLabel.textContent = `Taxa do Indicador (%) *`;
+    
+    // O valor no banco está em decimal, ex: 0.105, então mostramos 10.5 no input.
+    const percentageVal = (indicator.value * 100);
+
+    indicatorValueContainer.innerHTML = `
+      <input 
+        type="number" 
+        id="indicatorValue" 
+        name="value" 
+        value="${percentageVal}"
+        step="0.0001"
+        min="0"
+        required 
+        placeholder="Ex: 10.5"
+        class="w-full bg-white border border-brandIceBlue rounded-xl px-4 py-2.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brandAccent/80 focus:border-transparent transition-all duration-200"
+      >
+    `;
+  }
+
+  openModal(indicatorModal);
+}
+
+/**
+ * Fecha o modal de indicador
+ */
+function closeIndicatorModal() {
+  closeModal(indicatorModal);
+}
+
+/**
+ * Salva o indicador editado via API PUT
+ * @param {Event} e 
+ */
+async function saveIndicator(e) {
+  e.preventDefault();
+
+  const indicatorId = indicatorIdInput.value;
+  const indicator = allIndicators.find(ind => ind.id === indicatorId);
+  if (!indicator) return;
+
+  const inputVal = document.getElementById('indicatorValue').value;
+  if (!inputVal) {
+    document.getElementById('indicatorValueError').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('indicatorValueError').classList.add('hidden');
+
+  let payloadValue;
+  if (indicator.name === 'COPOM') {
+    // O input type="date" retorna no formato YYYY-MM-DD. Convertemos para timestamp Unix.
+    // Concatenar T12:00:00 para evitar desvios causados por fuso horário.
+    const dateParsed = new Date(inputVal + 'T12:00:00');
+    payloadValue = dateParsed.getTime();
+    if (isNaN(payloadValue)) {
+      showToast('Data inválida.', 'error');
+      return;
+    }
+  } else {
+    // Taxas: converter porcentagem de volta para decimal
+    const numVal = parseFloat(inputVal);
+    if (isNaN(numVal)) {
+      showToast('Valor inválido.', 'error');
+      return;
+    }
+    payloadValue = numVal / 100;
+  }
+
+  btnSaveIndicatorSpinner.classList.remove('hidden');
+  btnSaveIndicatorText.textContent = 'Salvando...';
+
+  try {
+    const res = await fetchWithAuth(`/api/admin/indicators/${indicatorId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ value: payloadValue })
+    });
+
+    if (res && res.ok) {
+      showToast(`Indicador "${indicator.name}" atualizado com sucesso!`, 'success');
+      closeIndicatorModal();
+      loadIndicators();
+    } else {
+      const err = res ? await res.json() : {};
+      showToast(err.error || 'Erro ao atualizar indicador.', 'error');
+    }
+  } catch (error) {
+    showToast('Falha na conexão de rede.', 'error');
+  } finally {
+    btnSaveIndicatorSpinner.classList.add('hidden');
+    btnSaveIndicatorText.textContent = 'Salvar Indicador';
   }
 }
 

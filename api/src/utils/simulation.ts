@@ -143,7 +143,7 @@ export function runSimulations(
     const institutionWarnings: string[] = [];
 
     // Validar idade limite: idade + prazo em anos > 80
-    if (age + term / 12 > 80) {
+    if (institution.validateAge !== false && age + term / 12 > 80) {
       institutionWarnings.push(
         'A idade do proponente somada ao prazo de financiamento ultrapassa o limite de 80 anos'
       );
@@ -159,12 +159,12 @@ export function runSimulations(
     if (sacRate) {
       // Validar limites específicos da taxa do banco
       const ltv = financedAmount / propertyValue;
-      if (ltv > sacRate.maxLTV) {
+      if (institution.validateLTV !== false && ltv > sacRate.maxLTV) {
         institutionWarnings.push(
           `Valor financiado excede o limite máximo de LTV do banco (${(sacRate.maxLTV * 100).toFixed(0)}%) para a modalidade SAC`
         );
       }
-      if (term < sacRate.minTerm || term > sacRate.maxTerm) {
+      if (institution.validateTerm !== false && (term < sacRate.minTerm || term > sacRate.maxTerm)) {
         institutionWarnings.push(
           `Prazo solicitado fora dos limites aceitos pelo banco para a modalidade SAC (${sacRate.minTerm} a ${sacRate.maxTerm} meses)`
         );
@@ -183,12 +183,12 @@ export function runSimulations(
     if (priceRate) {
       // Validar limites específicos da taxa do banco
       const ltv = financedAmount / propertyValue;
-      if (ltv > priceRate.maxLTV) {
+      if (institution.validateLTV !== false && ltv > priceRate.maxLTV) {
         institutionWarnings.push(
           `Valor financiado excede o limite máximo de LTV do banco (${(priceRate.maxLTV * 100).toFixed(0)}%) para a modalidade PRICE`
         );
       }
-      if (term < priceRate.minTerm || term > priceRate.maxTerm) {
+      if (institution.validateTerm !== false && (term < priceRate.minTerm || term > priceRate.maxTerm)) {
         institutionWarnings.push(
           `Prazo solicitado fora dos limites aceitos pelo banco para a modalidade PRICE (${priceRate.minTerm} a ${priceRate.maxTerm} meses)`
         );

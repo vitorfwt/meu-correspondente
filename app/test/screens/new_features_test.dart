@@ -51,8 +51,14 @@ class MockAuthRepo extends AuthRepository {
 }
 
 class MockIndicatorRepo extends IndicatorRepository {
+  final List<MacroeconomicIndicator>? customIndicators;
+  MockIndicatorRepo({this.customIndicators});
+
   @override
   Future<List<MacroeconomicIndicator>> getIndicators({required String token}) async {
+    if (customIndicators != null) {
+      return customIndicators!;
+    }
     return [
       MacroeconomicIndicator(
         id: '1',
@@ -224,6 +230,80 @@ void main() {
       expect(find.text('0,1200%'), findsOneWidget);
       expect(find.text('Poupança'), findsOneWidget);
       expect(find.text('6,17%'), findsOneWidget);
+    });
+
+    testWidgets('Renders COPOM card with "Faltam 10 dias" when COPOM indicator is 10 days in the future', (WidgetTester tester) async {
+      final mockRepo = MockAuthRepo();
+      final targetDate = DateTime.now().add(const Duration(days: 10, minutes: 5));
+      final copomIndicator = MacroeconomicIndicator(
+        id: '5',
+        name: 'COPOM',
+        value: targetDate.millisecondsSinceEpoch.toDouble(),
+        updatedAt: DateTime.now(),
+      );
+
+      final mockIndicatorRepo = MockIndicatorRepo(
+        customIndicators: [
+          copomIndicator,
+        ],
+      );
+      
+      final authProvider = AuthProvider(repository: mockRepo, prefs: prefs);
+      await authProvider.loginWithGoogle();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: AuthProviderScope(
+            notifier: authProvider,
+            child: HomeScreen(
+              onNavigateToSimulations: () {},
+              repository: mockIndicatorRepo,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('copom_card')), findsOneWidget);
+      expect(find.text('Próxima reunião do COPOM'), findsOneWidget);
+      expect(find.textContaining('Faltam 10 dias'), findsOneWidget);
+    });
+
+    testWidgets('Does not render COPOM card when COPOM indicator is in the past', (WidgetTester tester) async {
+      final mockRepo = MockAuthRepo();
+      final targetDate = DateTime.now().subtract(const Duration(days: 1));
+      final copomIndicator = MacroeconomicIndicator(
+        id: '5',
+        name: 'COPOM',
+        value: targetDate.millisecondsSinceEpoch.toDouble(),
+        updatedAt: DateTime.now(),
+      );
+
+      final mockIndicatorRepo = MockIndicatorRepo(
+        customIndicators: [
+          copomIndicator,
+        ],
+      );
+      
+      final authProvider = AuthProvider(repository: mockRepo, prefs: prefs);
+      await authProvider.loginWithGoogle();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: AuthProviderScope(
+            notifier: authProvider,
+            child: HomeScreen(
+              onNavigateToSimulations: () {},
+              repository: mockIndicatorRepo,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('copom_card')), findsNothing);
     });
   });
 

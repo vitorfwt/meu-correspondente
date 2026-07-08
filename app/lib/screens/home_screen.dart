@@ -270,60 +270,125 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
 
                     final list = snapshot.data!;
-                    return Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: list.map((ind) {
-                        return SizedBox(
-                          key: Key('indicator_card_${ind.name}'),
-                          width: (MediaQuery.of(context).size.width - 48 - 12) / 2,
-                          child: AppCard(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    
+                    final copomList = list.where((ind) => ind.name.toUpperCase() == 'COPOM').toList();
+                    final copomIndicator = copomList.isNotEmpty ? copomList.first : null;
+
+                    Widget? copomCard;
+                    if (copomIndicator != null) {
+                      final copomDate = DateTime.fromMillisecondsSinceEpoch(copomIndicator.value.toInt());
+                      final difference = copomDate.difference(DateTime.now()).inDays;
+                      if (difference >= 0) {
+                        copomCard = Container(
+                          key: const Key('copom_card'),
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(AppRadius.radiusCards),
+                            border: Border.all(color: AppColors.accent, width: 1.5),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.calendar_month,
+                                color: AppColors.accent,
+                                size: 32,
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Expanded(
-                                      child: Text(
-                                        _getDisplayName(ind.name),
-                                        style: AppTypography.legend.copyWith(
-                                          color: AppColors.secondary,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
+                                    const Text(
+                                      'Próxima reunião do COPOM',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
                                       ),
                                     ),
-                                    Icon(
-                                      _getIconForIndicator(ind.name),
-                                      color: AppColors.accent,
-                                      size: 20,
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      difference == 0
+                                          ? 'É hoje! Reunião do COPOM (${_formatDate(copomDate)})'
+                                          : 'Faltam $difference dias (${_formatDate(copomDate)})',
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 14,
+                                      ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  _formatValue(ind.value),
-                                  style: AppTypography.sectionTitle.copyWith(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Atu. ${_formatDate(ind.updatedAt)}',
-                                  style: AppTypography.helperText.copyWith(
-                                    color: AppColors.secondary.withOpacity(0.5),
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         );
-                      }).toList(),
+                      }
+                    }
+
+                    final gridList = list.where((ind) => ind.name.toUpperCase() != 'COPOM').toList();
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (copomCard != null) copomCard,
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: gridList.map((ind) {
+                            return SizedBox(
+                              key: Key('indicator_card_${ind.name}'),
+                              width: (MediaQuery.of(context).size.width - 48 - 12) / 2,
+                              child: AppCard(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            _getDisplayName(ind.name),
+                                            style: AppTypography.legend.copyWith(
+                                              color: AppColors.secondary,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        Icon(
+                                          _getIconForIndicator(ind.name),
+                                          color: AppColors.accent,
+                                          size: 20,
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      _formatValue(ind.value),
+                                      style: AppTypography.sectionTitle.copyWith(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Atu. ${_formatDate(ind.updatedAt)}',
+                                      style: AppTypography.helperText.copyWith(
+                                        color: AppColors.secondary.withOpacity(0.5),
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     );
                   },
                 ),

@@ -345,4 +345,188 @@ describe('Admin Endpoints and Middleware Integration Tests', () => {
       expect(checkRate).toBeNull();
     });
   });
+
+  describe('Macroeconomic Indicators CRUD', () => {
+    let indicatorId: string;
+
+    beforeAll(async () => {
+      // Proactively ensure we have a test indicator in the DB to test update
+      const existing = await prisma.macroeconomicIndicator.findUnique({
+        where: { name: 'SELIC' },
+      });
+      if (!existing) {
+        const ind = await prisma.macroeconomicIndicator.create({
+          data: { name: 'SELIC', value: 0.105 },
+        });
+        indicatorId = ind.id;
+      } else {
+        indicatorId = existing.id;
+      }
+    });
+
+    it('should list macroeconomic indicators for admin', async () => {
+      const response = await request(app)
+        .get('/api/admin/indicators')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.some((ind: any) => ind.name === 'SELIC')).toBe(true);
+    });
+
+    it('should fail listing indicators for non-admin', async () => {
+      const response = await request(app)
+        .get('/api/admin/indicators')
+        .set('Authorization', `Bearer ${clientToken}`);
+
+      expect(response.status).toBe(403);
+    });
+
+    it('should update the value of an indicator', async () => {
+      const response = await request(app)
+        .put(`/api/admin/indicators/${indicatorId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ value: 0.115 });
+
+      expect(response.status).toBe(200);
+      expect(response.body.value).toBe(0.115);
+
+      // Verify DB got updated
+      const updatedInd = await prisma.macroeconomicIndicator.findUnique({
+        where: { id: indicatorId },
+      });
+      expect(updatedInd?.value).toBe(0.115);
+    });
+
+    it('should return 400 when value is missing', async () => {
+      const response = await request(app)
+        .put(`/api/admin/indicators/${indicatorId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({});
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toContain('Value is required');
+    });
+
+    it('should return 404 when updating non-existent indicator', async () => {
+      const response = await request(app)
+        .put('/api/admin/indicators/00000000-0000-0000-0000-000000000000')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ value: 0.12 });
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  describe('Financial Institution Validation Flags', () => {
+    it('should create an institution with default validation flags to true', async () => {
+      const instName = `Banco Default Flags ${Date.now()}`;
+      const response = await request(app)
+        .post('/api/admin/institutions')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ name: instName });
+
+      expect(response.status).toBe(201);
+      expect(response.body.validateLTV).toBe(true);
+      expect(response.body.validateTerm).toBe(true);
+      expect(response.body.validateAge).toBe(true);
+
+      instIdsToClean.push(response.body.id);
+    });
+
+    it('should allow setting validation flags to false when creating institution', async () => {
+      const instName = `Banco Custom Flags ${Date.now()}`;
+      const response = await request(app)
+        .post('/api/admin/institutions')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          name: instName,
+          validateLTV: false,
+          validateTerm: false,
+          validateAge: false,
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.validateLTV).toBe(false);
+      expect(response.body.validateTerm).toBe(false);
+      expect(response.body.validateAge).toBe(false);
+
+      instIdsToClean.push(response.body.id);
+    });
+
+    it('should allow updating validation flags', async () => {
+      // Create one first
+      const instName = `Banco Update Flags ${Date.now()}`;
+      const createResponse = await request(app)
+        .post('/api/admin/institutions')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ name: instName });
+
+      const instId = createResponse.body.id;
+      instIdsToClean.push(instId);
+
+      // Update validation flags to false
+      const updateResponse = await request(app)
+        .put(`/api/admin/institutions/${instId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          validateLTV: false,
+          validateTerm: false,
+          validateAge: false,
+        });
+
+      expect(updateResponse.status).toBe(200);
+      expect(updateResponse.body.validateLTV).toBe(false);
+      expect(updateResponse.body.validateTerm).toBe(false);
+      expect(updateResponse.body.validateAge).toBe(false);
+    });
+
+    it('should respect institution validation flags in simulations', async () => {
+      // 1. Criar instituição com flags desativadas
+      const instName = `Banco Sem Validacao ${Date.now()}`;
+      const instResponse = await request(app)
+        .post('/api/admin/institutions')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          name: instName,
+          validateLTV: false,
+          validateTerm: false,
+          validateAge: false,
+        });
+      const instId = instResponse.body.id;
+      instIdsToClean.push(instId);
+
+      // 2. Criar taxa com limites que serão violados
+      const rateResponse = await request(app)
+        .post('/api/admin/interest-rates')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          institutionId: instId,
+          type: 'SAC',
+          rateValue: 0.10,
+          maxLTV: 0.5,
+          minTerm: 60,
+          maxTerm: 120,
+          maxAge: 80,
+        });
+      
+      // 3. Simulação violando todos os critérios
+      const simResponse = await request(app)
+        .post('/api/simulate')
+        .send({
+          propertyValue: 100000,
+          downPayment: 20000, // LTV = 0.8 > 0.5
+          monthlyIncome: 20000,
+          age: 75,
+          term: 360, // Term = 360 > 120 e Idade + Prazo = 75 + 30 = 105 > 80
+        });
+
+      expect(simResponse.status).toBe(200);
+      const ourInstResult = simResponse.body.find((r: any) => r.institutionId === instId);
+      expect(ourInstResult).toBeDefined();
+      
+      // Não deve ter avisos de LTV, Term ou Idade
+      expect(ourInstResult.warnings).toHaveLength(0);
+    });
+  });
 });

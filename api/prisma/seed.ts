@@ -61,6 +61,9 @@ async function main() {
       name: 'Caixa Econômica Federal',
       logoUrl: '/public/logos/caixa.png',
       isActive: true,
+      validateLTV: true,
+      validateTerm: true,
+      validateAge: true,
       rates: [
         { type: 'SAC', rateValue: 0.0999, maxLTV: 0.80, minTerm: 120, maxTerm: 420, maxAge: 80 },
         { type: 'Price', rateValue: 0.1025, maxLTV: 0.80, minTerm: 120, maxTerm: 360, maxAge: 80 },
@@ -71,6 +74,9 @@ async function main() {
       name: 'Itaú Unibanco',
       logoUrl: '/public/logos/itau.png',
       isActive: true,
+      validateLTV: true,
+      validateTerm: true,
+      validateAge: true,
       rates: [
         { type: 'SAC', rateValue: 0.1099, maxLTV: 0.82, minTerm: 120, maxTerm: 420, maxAge: 80 },
         { type: 'Price', rateValue: 0.1125, maxLTV: 0.82, minTerm: 120, maxTerm: 360, maxAge: 80 },
@@ -84,6 +90,9 @@ async function main() {
         name: inst.name,
         logoUrl: inst.logoUrl,
         isActive: inst.isActive,
+        validateLTV: inst.validateLTV,
+        validateTerm: inst.validateTerm,
+        validateAge: inst.validateAge,
       },
     });
 
@@ -143,6 +152,7 @@ async function main() {
     { name: 'IPCA', value: 0.045 },
     { name: 'TR', value: 0.0012 },
     { name: 'POUPANCA', value: 0.0617 },
+    { name: 'COPOM', value: Date.now() + 15 * 24 * 60 * 60 * 1000 },
   ];
 
   for (const indicator of indicatorsData) {
