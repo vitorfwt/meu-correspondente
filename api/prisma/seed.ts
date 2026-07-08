@@ -33,6 +33,28 @@ async function main() {
   });
   console.log(`User created: ${user.name}`);
 
+  const pendingBroker = await prisma.user.create({
+    data: {
+      name: 'João Corretor',
+      email: 'mock-joao-corretor@example.com',
+      role: 'broker',
+      creci: null,
+      creciState: null,
+    },
+  });
+  console.log(`Pending Broker created: ${pendingBroker.name} (${pendingBroker.email})`);
+
+  const activeBroker = await prisma.user.create({
+    data: {
+      name: 'Carlos Corretor',
+      email: 'mock-carlos-corretor@example.com',
+      role: 'broker',
+      creci: '123456',
+      creciState: 'SP',
+    },
+  });
+  console.log(`Active Broker created: ${activeBroker.name} (${activeBroker.email})`);
+
   // 2. Create Institutions and Rates
   const institutionsData = [
     {
