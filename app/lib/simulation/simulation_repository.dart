@@ -219,10 +219,13 @@ class SimulationRepository {
     if (_baseUrl != null && _baseUrl!.isNotEmpty) {
       return _baseUrl!;
     }
-    if (!kIsWeb && Platform.isAndroid) {
-      return 'http://10.0.2.2:3000';
+    if (kDebugMode) {
+      if (!kIsWeb && Platform.isAndroid) {
+        return 'http://10.0.2.2:3000';
+      }
+      return 'http://localhost:3000';
     }
-    return 'http://localhost:3000';
+    return 'https://meu-correspondente.onrender.com';
   }
 
   Future<List<BankSimulation>> calculateSimulation(SimulationInput input, {String? token}) async {

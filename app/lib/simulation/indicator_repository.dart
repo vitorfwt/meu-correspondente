@@ -47,8 +47,11 @@ class IndicatorRepository {
     if (_baseUrl != null && _baseUrl!.isNotEmpty) {
       return _baseUrl!;
     }
-    // IP xumbado para teste no Mi 9 Lite via Wi-Fi
-    return 'http://192.168.0.70:3000';
+    if (kDebugMode) {
+      // IP xumbado para teste no Mi 9 Lite via Wi-Fi
+      return 'http://192.168.0.70:3000';
+    }
+    return 'https://meu-correspondente.onrender.com';
   }
 
   Future<List<MacroeconomicIndicator>> getIndicators({required String token}) async {
