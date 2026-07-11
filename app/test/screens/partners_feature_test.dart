@@ -2,8 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app/auth/auth_provider.dart';
+import 'package:app/auth/auth_repository.dart';
 import 'package:app/simulation/partner_repository.dart';
 import 'package:app/screens/partners_screen.dart';
+
+class MockAuthRepo extends AuthRepository {
+  const MockAuthRepo();
+
+  @override
+  Future<(User, String)> loginWithGoogle() async {
+    return (
+      const User(id: 'google_123', name: 'João Silva', email: 'joao.silva@example.com', role: 'client'),
+      'mock_google_token'
+    );
+  }
+}
 
 class MockPartnerRepo extends PartnerRepository {
   bool getPartnersCalled = false;
@@ -45,7 +58,8 @@ void main() {
   group('PartnersScreen Tests', () {
     testWidgets('Renders partners list with contact buttons', (WidgetTester tester) async {
       final mockRepo = MockPartnerRepo();
-      final authProvider = AuthProvider(prefs: prefs);
+      final mockAuthRepo = const MockAuthRepo();
+      final authProvider = AuthProvider(repository: mockAuthRepo, prefs: prefs);
       await authProvider.loginWithGoogle();
 
       await tester.pumpWidget(

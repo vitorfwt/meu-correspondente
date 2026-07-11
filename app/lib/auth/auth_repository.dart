@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_sign_in/google_sign_in.dart';
 
 class User {
   final String id;
@@ -62,11 +63,16 @@ class User {
 class AuthRepository {
   final http.Client? client;
   final String? _baseUrl;
+  final GoogleSignIn? _googleSignIn;
 
   const AuthRepository({
     this.client,
     String? baseUrl,
-  }) : _baseUrl = baseUrl;
+    GoogleSignIn? googleSignIn,
+  }) : _baseUrl = baseUrl,
+       _googleSignIn = googleSignIn;
+
+  GoogleSignIn get googleSignIn => _googleSignIn ?? GoogleSignIn(scopes: ['email']);
 
   String get baseUrl {
     if (_baseUrl != null && _baseUrl!.isNotEmpty) {
@@ -80,27 +86,46 @@ class AuthRepository {
   }
 
   Future<(User, String)> loginWithGoogle() async {
-    final url = Uri.parse('$baseUrl/api/auth/social-login');
+    debugPrint('Iniciando fluxo de login com Google...');
     try {
+      final account = await googleSignIn.signIn();
+      if (account == null) {
+        debugPrint('Fluxo de login com Google cancelado pelo usuário.');
+        throw Exception('Login cancelado pelo usuário.');
+      }
+
+      debugPrint('Google Sign-In realizado com sucesso. Obtendo autenticação...');
+      final auth = await account.authentication;
+      final idToken = auth.idToken;
+      if (idToken == null) {
+        debugPrint('Erro: idToken retornado do Google Sign-In é nulo.');
+        throw Exception('Não foi possível obter o ID Token do Google.');
+      }
+
+      debugPrint('Enviando idToken para o servidor de backend: $baseUrl/api/auth/social-login');
+      final url = Uri.parse('$baseUrl/api/auth/social-login');
       final response = await (client ?? http.Client()).post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'provider': 'google',
-          'idToken': 'mock-joao-silva',
+          'idToken': idToken,
         }),
       );
 
+      debugPrint('Resposta do servidor recebida com status: ${response.statusCode}');
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
         final user = User.fromJson(data['user'] as Map<String, dynamic>);
         final token = data['token'] as String;
+        debugPrint('Login com Google autenticado com sucesso no backend para: ${user.email}');
         return (user, token);
       } else {
+        debugPrint('Erro no backend ao realizar social-login (status ${response.statusCode}): ${response.body}');
         throw Exception('Erro ao realizar login no servidor (Código ${response.statusCode})');
       }
     } catch (e) {
-      debugPrint('loginWithGoogle error: $e');
+      debugPrint('Erro no loginWithGoogle: $e');
       rethrow;
     }
   }
