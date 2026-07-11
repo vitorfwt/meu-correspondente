@@ -1,5 +1,13 @@
 // Gerenciamento de token JWT e estado de autenticação do administrador
 
+// Configuração centralizada da URL base da API para desenvolvimento local e produção
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  window.API_BASE_URL = 'http://localhost:3000';
+} else {
+  // Cole aqui a URL do seu backend em produção (ex: do Render ou Railway)
+  window.API_BASE_URL = 'https://meu-correspondente-api.onrender.com';
+}
+
 const AUTH_TOKEN_KEY = 'mc_admin_token';
 const AUTH_USER_KEY = 'mc_admin_user';
 

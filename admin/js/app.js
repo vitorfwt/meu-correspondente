@@ -104,7 +104,7 @@ async function fetchWithAuth(url, options = {}) {
   };
 
   try {
-    const response = await fetch(url, { ...options, headers });
+    const response = await fetch(window.API_BASE_URL + url, { ...options, headers });
     
     if (response.status === 401 || response.status === 403) {
       console.warn('Sessão expirada ou não autorizada');
