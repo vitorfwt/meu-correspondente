@@ -5,7 +5,7 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
   window.API_BASE_URL = 'http://localhost:3000';
 } else {
   // Cole aqui a URL do seu backend em produção (ex: do Render ou Railway)
-  window.API_BASE_URL = 'https://meu-correspondente-api.onrender.com';
+  window.API_BASE_URL = 'https://meu-correspondente.onrender.com';
 }
 
 const AUTH_TOKEN_KEY = 'mc_admin_token';
@@ -94,7 +94,7 @@ function getSessionUser() {
 function logout() {
   localStorage.removeItem(AUTH_TOKEN_KEY);
   localStorage.removeItem(AUTH_USER_KEY);
-  
+
   // Evitar loop se já estiver no login.html
   if (!window.location.pathname.endsWith('login.html')) {
     window.location.href = 'login.html';
